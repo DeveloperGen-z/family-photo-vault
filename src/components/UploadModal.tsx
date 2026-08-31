@@ -152,7 +152,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
               <Upload className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-foreground">Upload Photos</h2>
+              <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: "var(--font-serif)" }}>Upload Photos</h2>
               <p className="text-xs text-muted-foreground">
                 Submit photos to the vault for admin review
               </p>

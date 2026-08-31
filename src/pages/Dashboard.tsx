@@ -118,7 +118,7 @@ export default function Dashboard() {
               <Shield className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">Admin Dashboard</h1>
+              <h1 className="text-lg font-bold text-foreground" style={{ fontFamily: "var(--font-serif)" }}>Admin Dashboard</h1>
               <p className="text-xs text-muted-foreground">Manage the family vault</p>
             </div>
           </div>

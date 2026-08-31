@@ -62,7 +62,7 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
               <Shield className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-foreground">Admin Access</h2>
+              <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: "var(--font-serif)" }}>Admin Access</h2>
               <p className="text-xs text-muted-foreground">
                 Enter the admin password to continue
               </p>

@@ -42,74 +42,81 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Family Photo Vault — Premium Minimal Theme */
+/* =============================================
+   Family Photo Vault — Premium Theme
+   ============================================= */
+
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.99 0.006 80);
-  --foreground: oklch(0.18 0.02 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 60);
-  --primary: oklch(0.55 0.12 70);
-  --primary-foreground: oklch(0.99 0.006 80);
-  --secondary: oklch(0.96 0.015 75);
-  --secondary-foreground: oklch(0.25 0.03 60);
-  --muted: oklch(0.965 0.01 75);
-  --muted-foreground: oklch(0.48 0.03 65);
-  --accent: oklch(0.96 0.015 75);
-  --accent-foreground: oklch(0.18 0.02 60);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.93 0.01 75);
-  --input: oklch(0.93 0.01 75);
-  --ring: oklch(0.55 0.12 70);
-  --chart-1: oklch(0.55 0.12 70);
-  --chart-2: oklch(0.55 0.1 145);
-  --chart-3: oklch(0.65 0.06 350);
-  --chart-4: oklch(0.65 0.1 55);
-  --chart-5: oklch(0.5 0.08 200);
-  --sidebar: oklch(0.99 0.006 80);
-  --sidebar-foreground: oklch(0.18 0.02 60);
-  --sidebar-primary: oklch(0.55 0.12 70);
-  --sidebar-primary-foreground: oklch(0.99 0.006 80);
-  --sidebar-accent: oklch(0.96 0.015 75);
-  --sidebar-accent-foreground: oklch(0.18 0.02 60);
-  --sidebar-border: oklch(0.93 0.01 75);
-  --sidebar-ring: oklch(0.55 0.12 70);
+  --font-serif: 'Playfair Display', 'Lora', Georgia, serif;
+  --font-body: 'Poppins', system-ui, -apple-system, sans-serif;
+
+  /* Light palette — neutral base with gold accent */
+  --background: #f8f9fa;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f5;
+  --secondary-foreground: #111111;
+  --muted: #f1f3f5;
+  --muted-foreground: #666666;
+  --accent: #f1f3f5;
+  --accent-foreground: #111111;
+  --destructive: #dc3545;
+  --border: rgba(0, 0, 0, 0.06);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #111111;
+  --chart-1: #111111;
+  --chart-2: #666666;
+  --chart-3: #999999;
+  --chart-4: #cccccc;
+  --chart-5: #e5e5e5;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #111111;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f3f5;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+  --sidebar-ring: #111111;
 }
 
 .dark {
-  --background: oklch(0.13 0.015 60);
-  --foreground: oklch(0.95 0.008 80);
-  --card: oklch(0.17 0.018 60);
-  --card-foreground: oklch(0.95 0.008 80);
-  --popover: oklch(0.17 0.018 60);
-  --popover-foreground: oklch(0.95 0.008 80);
-  --primary: oklch(0.65 0.12 70);
-  --primary-foreground: oklch(0.13 0.015 60);
-  --secondary: oklch(0.22 0.02 60);
-  --secondary-foreground: oklch(0.95 0.008 80);
-  --muted: oklch(0.22 0.02 60);
-  --muted-foreground: oklch(0.6 0.025 70);
-  --accent: oklch(0.22 0.02 60);
-  --accent-foreground: oklch(0.95 0.008 80);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.65 0.12 70);
-  --chart-1: oklch(0.65 0.12 70);
-  --chart-2: oklch(0.55 0.1 145);
-  --chart-3: oklch(0.65 0.06 350);
-  --chart-4: oklch(0.65 0.1 55);
-  --chart-5: oklch(0.5 0.08 200);
-  --sidebar: oklch(0.13 0.015 60);
-  --sidebar-foreground: oklch(0.95 0.008 80);
-  --sidebar-primary: oklch(0.65 0.12 70);
-  --sidebar-primary-foreground: oklch(0.13 0.015 60);
-  --sidebar-accent: oklch(0.22 0.02 60);
-  --sidebar-accent-foreground: oklch(0.95 0.008 80);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.65 0.12 70);
+  --background: #0a0a0a;
+  --foreground: #f5f5f5;
+  --card: #141414;
+  --card-foreground: #f5f5f5;
+  --popover: #141414;
+  --popover-foreground: #f5f5f5;
+  --primary: #f5f5f5;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #f5f5f5;
+  --muted: #1a1a1a;
+  --muted-foreground: #888888;
+  --accent: #1a1a1a;
+  --accent-foreground: #f5f5f5;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #f5f5f5;
+  --chart-1: #f5f5f5;
+  --chart-2: #888888;
+  --chart-3: #555555;
+  --chart-4: #333333;
+  --chart-5: #1a1a1a;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #f5f5f5;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #f5f5f5;
 }
 
 @layer base {
@@ -118,6 +125,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   button:not([disabled]),
   [role="button"]:not([disabled]) {
@@ -125,57 +135,373 @@
   }
 }
 
-/* Family Photo Vault — Masonry & Components */
-.masonry-grid {
-  column-count: 4;
-  column-gap: 1.25rem;
-}
-@media (max-width: 1280px) {
-  .masonry-grid { column-count: 3; }
-}
-@media (max-width: 768px) {
-  .masonry-grid { column-count: 2; column-gap: 0.75rem; }
-}
-@media (max-width: 480px) {
-  .masonry-grid { column-count: 2; column-gap: 0.5rem; }
-}
-.masonry-item {
-  break-inside: avoid;
-  margin-bottom: 1.25rem;
+/* =============================================
+   Splash / Intro Screen
+   ============================================= */
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #050505;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
-/* Subtle photo card */
-.photo-frame {
-  box-shadow: 0 1px 3px oklch(0 0 0 / 0.06);
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.photo-frame:hover {
-  box-shadow: 0 8px 30px oklch(0 0 0 / 0.1);
-  transform: translateY(-2px);
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
 }
 
-/* Hero — refined, minimal gradient */
-.hero-gradient {
-  background: linear-gradient(
-    160deg,
-    oklch(0.96 0.025 75) 0%,
-    oklch(0.94 0.04 65) 40%,
-    oklch(0.92 0.05 55) 70%,
-    oklch(0.93 0.03 45) 100%
+.splash-ambient-glow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(
+    circle,
+    rgba(212, 175, 55, 0.07) 0%,
+    transparent 65%
   );
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: splashPulseGlow 4s infinite alternate ease-in-out;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+.splash-title {
+  font-family: 'Lora', serif;
+  font-size: clamp(2.2rem, 6vw, 4.2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  background: linear-gradient(
+    to right,
+    #bf953f,
+    #fcf6ba,
+    #b38728,
+    #fbf5b7,
+    #aa771c
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding: 0 20px;
 }
+
+.splash-divider {
+  width: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(252, 246, 186, 0.5),
+    transparent
+  );
+  margin: 18px 0 22px;
+  animation: splashExpandLine 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s;
+}
+
+.splash-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  font-weight: 300;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: splashSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.35s;
+}
+
+.splash-tagline {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 300;
+  letter-spacing: 2px;
+  margin-top: 14px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: splashSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.45s;
+}
+
+.splash-typewriter {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 2px;
+  margin-top: 16px;
+  min-height: 28px;
+}
+
+.splash-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1rem;
+  background-color: #d4af37;
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: splashBlink 0.8s infinite;
+}
+
+.splash-watermark {
+  position: absolute;
+  bottom: 32px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 300;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: splashSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.55s;
+}
+
+@keyframes splashSlideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes splashExpandLine {
+  to {
+    width: 220px;
+    opacity: 1;
+  }
+}
+@keyframes splashPulseGlow {
+  to {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.7;
+  }
+}
+@keyframes splashBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* =============================================
+   Gallery Cards
+   ============================================= */
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+}
+
+.vault-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.vault-card.is-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.vault-card:not(.is-visible) {
+  opacity: 0;
+  translate: 0 30px;
+}
+
+@media (hover: hover) {
+  .vault-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  }
+  .vault-card:hover .vault-card-img.loaded {
+    transform: scale(1.04);
+  }
+}
+
+.vault-card-img-wrap {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .vault-card-img-wrap {
+    height: 220px;
+  }
+}
+
+/* Skeleton shimmer */
+.vault-card-img-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: vaultShimmer 1.2s infinite linear;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.vault-card-img-wrap:has(.loaded)::before {
+  opacity: 0;
+  animation: none;
+}
+
+.vault-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.05);
+  transition:
+    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.6s ease;
+}
+
+.vault-card-img.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes vaultShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.vault-card-actions {
+  padding: 16px;
+}
+
+.vault-download-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px;
+  background: #111111;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 12px;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.vault-download-btn:hover {
+  background: #333333;
+}
+
+.vault-download-btn:active {
+  transform: scale(0.97);
+}
+
+.vault-download-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* =============================================
+   Gallery Header — Typewriter title
+   ============================================= */
+
+.gallery-title {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: #111;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  min-height: 50px;
+}
+
+.gallery-title-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background-color: #111;
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  animation: splashBlink 0.8s infinite;
+}
+
+/* =============================================
+   Scrollbar
+   ============================================= */
+
+body::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.8 0.03 70);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.65 0.06 70);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* =============================================
+   Utility — Transition classes for vault cards
+   ============================================= */
+
+.vault-card {
+  transition-property: transform, box-shadow, opacity, translate;
 }

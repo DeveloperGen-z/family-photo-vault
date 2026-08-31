@@ -1,22 +1,138 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Upload, Shield, Download, Heart } from "lucide-react";
+import { Camera, Upload, Shield, Download } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import SplashScreen from "@/components/SplashScreen";
 import AdminLoginModal from "@/components/AdminLoginModal";
 import UploadModal from "@/components/UploadModal";
 import PhotoLightbox from "@/components/PhotoLightbox";
 
+function useTypewriter(text: string, speed = 50, startDelay = 0) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    let i = 0;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const startTimeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        if (i < text.length) {
+          setDisplayed(text.slice(0, i + 1));
+          i++;
+        } else {
+          setDone(true);
+          clearInterval(interval);
+        }
+      }, speed);
+      return () => clearInterval(interval);
+    }, startDelay);
+
+    timer = startTimeout;
+    return () => clearTimeout(timer);
+  }, [text, speed, startDelay]);
+
+  return { displayed, done };
+}
+
+function GalleryCard({
+  photo,
+  index,
+  onClick,
+}: {
+  photo: { _id: string; url: string; fileName: string };
+  index: number;
+  onClick: () => void;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setVisible(true), (index % 4) * 80);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -20px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [index]);
+
+  return (
+    <div
+      ref={ref}
+      className={`vault-card ${visible ? "is-visible" : ""}`}
+    >
+      <div className="vault-card-img-wrap" onClick={onClick}>
+        <img
+          src={photo.url}
+          alt={photo.fileName}
+          className={`vault-card-img ${loaded ? "loaded" : ""}`}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+        />
+      </div>
+      <div className="vault-card-actions">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const link = document.createElement("a");
+            link.href = photo.url;
+            link.download = photo.fileName;
+            link.click();
+          }}
+          className="vault-download-btn"
+        >
+          <svg className="vault-download-icon" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
+  const [showSplash, setShowSplash] = useState(() => {
+    return !sessionStorage.getItem("vault_splash_seen");
+  });
+  const [galleryReady, setGalleryReady] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const approvedPhotos = useQuery(api.photos.listApproved);
-
   const photos = approvedPhotos ?? [];
+
+  const { displayed: galleryTitle, done: titleDone } = useTypewriter(
+    "Family Memories",
+    50,
+    galleryReady ? 200 : 99999,
+  );
+
+  const handleSplashComplete = useCallback(() => {
+    sessionStorage.setItem("vault_splash_seen", "1");
+    setShowSplash(false);
+    setTimeout(() => setGalleryReady(true), 100);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Splash Screen */}
+      <AnimatePresence>
+        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      </AnimatePresence>
+
       {/* Navigation */}
       <nav className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -24,7 +140,10 @@ export default function Landing() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
               <Camera className="h-5 w-5 text-primary" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-foreground">
+            <span
+              className="text-lg font-bold tracking-tight text-foreground"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
               Family Photo Vault
             </span>
           </div>
@@ -47,126 +166,113 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="hero-gradient relative overflow-hidden">
-        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
-              <Heart className="h-4 w-4 fill-current" />
-              Private family gallery
-            </div>
-            <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
-              Family Photo
-              <span className="block text-primary">Vault</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Your family’s memories, preserved in full quality. Browse,
-              download, and share — without compression or clutter.
-            </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <a
-                href="#gallery"
-                className="inline-flex items-center gap-2 rounded-xl bg-foreground px-7 py-3 text-sm font-semibold text-background shadow-lg transition-all hover:shadow-xl hover:translate-y-[-1px] active:scale-[0.97]"
-              >
-                <Camera className="h-4 w-4" />
-                View Gallery
-              </a>
-              <button
-                onClick={() => setShowUpload(true)}
-                className="inline-flex items-center gap-2 rounded-xl border-2 border-foreground/20 bg-white/60 px-7 py-3 text-sm font-semibold text-foreground backdrop-blur-sm transition-all hover:border-foreground/40 hover:bg-white/80 active:scale-[0.97]"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Photos
-              </button>
-            </div>
-          </motion.div>
+      {/* Hero Section — minimal, dark, elegant */}
+      <section className="relative overflow-hidden bg-[#050505]">
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 40%, rgba(212,175,55,0.06) 0%, transparent 60%)",
+            }}
+          />
         </div>
-        {/* Decorative elements */}
-        <div className="absolute -bottom-1 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent" />
+        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-light tracking-widest text-white/50 uppercase">
+            Private Family Gallery
+          </div>
+          <h1
+            className="text-5xl font-semibold leading-tight text-white md:text-7xl"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            Family Photo
+            <span
+              className="block mt-1"
+              style={{
+                background:
+                  "linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              Vault
+            </span>
+          </h1>
+          <div className="mx-auto my-6 h-px w-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          <p className="mx-auto max-w-xl text-base leading-relaxed text-white/50 font-light">
+            Your family&apos;s memories, preserved in full quality. Browse,
+            download, and share without compression or clutter.
+          </p>
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a
+              href="#gallery"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.97]"
+            >
+              <Camera className="h-4 w-4" />
+              View Gallery
+            </a>
+            <button
+              onClick={() => setShowUpload(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/15 active:scale-[0.97]"
+            >
+              <Upload className="h-4 w-4" />
+              Upload Photos
+            </button>
+          </div>
+        </div>
+        <div className="absolute -bottom-1 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Gallery Section */}
-      <section id="gallery" className="mx-auto max-w-7xl px-6 py-16">
-        <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">
-            Photo Gallery
+      <section id="gallery" className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="mb-12 text-center">
+          <h2
+            className="gallery-title"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            {galleryTitle}
+            {!titleDone && <span className="gallery-title-cursor" />}
           </h2>
-          <p className="mt-2 text-muted-foreground">
-            {photos.length > 0
-              ? `${photos.length} photo${photos.length !== 1 ? "s" : ""} in the vault`
-              : "No photos yet — upload the first one to get started."}
-          </p>
+          {photos.length > 0 && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              {photos.length} photo{photos.length !== 1 ? "s" : ""} in the
+              vault
+            </p>
+          )}
         </div>
 
         {photos.length > 0 ? (
-          <div className="masonry-grid">
+          <div className="gallery-grid">
             {photos.map((photo, index) => (
-              <motion.div
+              <GalleryCard
                 key={photo._id}
-                className="masonry-item"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-              >
-                <div
-                  className="photo-frame group relative cursor-pointer overflow-hidden rounded-2xl border border-border/40 bg-card"
-                  onClick={() => setLightboxIndex(index)}
-                >
-                  <img
-                    src={photo.url}
-                    alt={photo.fileName}
-                    className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <span className="truncate text-sm font-medium text-white">
-                      {photo.fileName}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const link = document.createElement("a");
-                          link.href = photo.url;
-                          link.download = photo.fileName;
-                          link.click();
-                        }}
-                        className="rounded-lg bg-white/20 p-2 backdrop-blur-sm transition-colors hover:bg-white/30"
-                        title="Download original"
-                      >
-                        <Download className="h-4 w-4 text-white" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+                photo={photo}
+                index={index}
+                onClick={() => setLightboxIndex(index)}
+              />
             ))}
           </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="rounded-3xl border-2 border-dashed border-border/60 bg-card/50 py-20 text-center"
-          >
-            <Camera className="mx-auto h-12 w-12 text-muted-foreground/40" />
-            <p className="mt-4 text-lg font-medium text-muted-foreground">
+        ) : galleryReady ? (
+          <div className="mx-auto max-w-md rounded-3xl border border-border/40 bg-card py-20 text-center">
+            <Camera className="mx-auto h-10 w-10 text-muted-foreground/30" />
+            <p className="mt-4 text-base font-medium text-muted-foreground">
               No photos yet
             </p>
-            <p className="mt-1 text-sm text-muted-foreground/70">
-              Click "Upload" to share the first photo
+            <p className="mt-1 text-sm text-muted-foreground/60">
+              Upload the first one to get started
             </p>
-          </motion.div>
-        )}
+          </div>
+        ) : null}
       </section>
 
-      {/* Footer */}          <footer className="border-t border-border/60 bg-card/30 py-8 text-center">
-        <p className="text-sm text-muted-foreground/70">
-          Family Photo Vault — Preserving memories, together
+      {/* Footer */}
+      <footer className="border-t border-border/40 py-10 text-center">
+        <p
+          className="text-xs tracking-widest text-muted-foreground/50 uppercase"
+          style={{ fontFamily: "var(--font-body)" }}
+        >
+          Family Photo Vault &mdash; Preserving memories, together
         </p>
       </footer>
 
