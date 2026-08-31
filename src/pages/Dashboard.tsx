@@ -119,7 +119,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-xs text-muted-foreground">Manage family photos</p>
+              <p className="text-xs text-muted-foreground">Manage the family vault</p>
             </div>
           </div>
           <button
@@ -258,7 +258,7 @@ export default function Dashboard() {
               <EmptyState
                 icon={<Clock className="h-10 w-10" />}
                 title="No pending photos"
-                description="Photos uploaded by family members will appear here for your approval."
+                description="Photos submitted by family members appear here for review."
               />
             )}
           </motion.div>
@@ -324,7 +324,7 @@ export default function Dashboard() {
               <EmptyState
                 icon={<Camera className="h-10 w-10" />}
                 title="No photos yet"
-                description="Upload the first photo to get started."
+                description="Upload the first photo to populate the vault."
               />
             )}
           </motion.div>
@@ -340,11 +340,10 @@ export default function Dashboard() {
             <div className="rounded-3xl border-2 border-dashed border-border/60 bg-card/50 p-12 text-center">
               <Upload className="mx-auto h-12 w-12 text-muted-foreground/40" />
               <h3 className="mt-4 text-lg font-semibold text-foreground">
-                Upload Photos as Admin
+                Admin Upload
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Photos uploaded here are automatically approved and visible in the
-                gallery.
+                Photos uploaded here are approved immediately and added to the vault.
               </p>
               <label className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md">
                 <Camera className="h-4 w-4" />
@@ -417,7 +416,7 @@ export default function Dashboard() {
               <EmptyState
                 icon={<Activity className="h-10 w-10" />}
                 title="No activity yet"
-                description="Actions performed on the platform will be logged here."
+                description="All actions are logged here for your reference."
               />
             )}
           </motion.div>

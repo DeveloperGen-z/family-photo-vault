@@ -154,7 +154,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
             <div>
               <h2 className="text-lg font-bold text-foreground">Upload Photos</h2>
               <p className="text-xs text-muted-foreground">
-                Share your photos with the family
+                Submit photos to the vault for admin review
               </p>
             </div>
           </div>
@@ -173,7 +173,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
               <div className="rounded-2xl bg-muted/50 p-4 text-center">
                 <Lock className="mx-auto h-8 w-8 text-muted-foreground/60" />
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Enter the upload code shared by your family admin
+                  Enter the access code shared by the vault administrator
                 </p>
               </div>
               <div>
@@ -321,9 +321,9 @@ export default function UploadModal({ onClose }: UploadModalProps) {
                         {files.filter((f) => f.status === "success").length} of{" "}
                         {files.length} uploaded! Waiting for admin approval.
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Your photos will appear in the gallery once approved.
-                      </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Your photos will appear in the vault once approved by the admin.
+                  </p>
                     </motion.div>
                   )}
                 </div>

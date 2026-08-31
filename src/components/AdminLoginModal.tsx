@@ -64,7 +64,7 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
             <div>
               <h2 className="text-lg font-bold text-foreground">Admin Access</h2>
               <p className="text-xs text-muted-foreground">
-                Enter admin password to continue
+                Enter the admin password to continue
               </p>
             </div>
           </div>

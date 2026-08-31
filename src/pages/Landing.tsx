@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Upload, Shield, Download, Heart, X } from "lucide-react";
+import { Camera, Upload, Shield, Download, Heart } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AdminLoginModal from "@/components/AdminLoginModal";
@@ -25,7 +25,7 @@ export default function Landing() {
               <Camera className="h-5 w-5 text-primary" />
             </div>
             <span className="text-lg font-bold tracking-tight text-foreground">
-              Family Photos
+              Family Photo Vault
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -49,8 +49,7 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="hero-gradient relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(1_0.02_65/0.4),transparent_70%)]" />
-        <div className="relative mx-auto max-w-5xl px-6 py-20 text-center md:py-28">
+        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -58,15 +57,15 @@ export default function Landing() {
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
               <Heart className="h-4 w-4 fill-current" />
-              Sharing memories, not just photos
+              Private family gallery
             </div>
             <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
-              Our Family
-              <span className="block text-primary">Photo Album</span>
+              Family Photo
+              <span className="block text-primary">Vault</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-              Share your precious moments in full quality — no compression, no
-              clutter. Browse, download, and relive every memory together.
+              Your family’s memories, preserved in full quality. Browse,
+              download, and share — without compression or clutter.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
@@ -81,7 +80,7 @@ export default function Landing() {
                 className="inline-flex items-center gap-2 rounded-xl border-2 border-foreground/20 bg-white/60 px-7 py-3 text-sm font-semibold text-foreground backdrop-blur-sm transition-all hover:border-foreground/40 hover:bg-white/80 active:scale-[0.97]"
               >
                 <Upload className="h-4 w-4" />
-                Share Your Photos
+                Upload Photos
               </button>
             </div>
           </motion.div>
@@ -98,8 +97,8 @@ export default function Landing() {
           </h2>
           <p className="mt-2 text-muted-foreground">
             {photos.length > 0
-              ? `${photos.length} beautiful moment${photos.length !== 1 ? "s" : ""} captured`
-              : "No photos yet — be the first to share!"}
+              ? `${photos.length} photo${photos.length !== 1 ? "s" : ""} in the vault`
+              : "No photos yet — upload the first one to get started."}
           </p>
         </div>
 
@@ -165,10 +164,9 @@ export default function Landing() {
         )}
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/60 bg-card/30 py-8 text-center">
+      {/* Footer */}          <footer className="border-t border-border/60 bg-card/30 py-8 text-center">
         <p className="text-sm text-muted-foreground/70">
-          Family Photos — Cherishing every moment together
+          Family Photo Vault — Preserving memories, together
         </p>
       </footer>
 
