@@ -505,3 +505,148 @@ body::-webkit-scrollbar {
 .vault-card {
   transition-property: transform, box-shadow, opacity, translate;
 }
+
+/* =============================================
+   Premium Animations
+   ============================================= */
+
+/* Character-by-character title reveal */
+@keyframes charReveal {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.splash-char {
+  display: inline-block;
+  opacity: 0;
+  animation: charReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Floating ambient dots in hero */
+.hero-dot {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.25);
+  pointer-events: none;
+}
+
+.hero-dot-1 {
+  top: 20%;
+  left: 15%;
+  animation: heroFloat1 7s infinite ease-in-out;
+}
+.hero-dot-2 {
+  top: 60%;
+  right: 20%;
+  animation: heroFloat2 9s infinite ease-in-out;
+  animation-delay: -2s;
+}
+.hero-dot-3 {
+  top: 30%;
+  right: 28%;
+  animation: heroFloat3 8s infinite ease-in-out;
+  animation-delay: -4s;
+}
+.hero-dot-4 {
+  bottom: 30%;
+  left: 22%;
+  animation: heroFloat1 6s infinite ease-in-out;
+  animation-delay: -1s;
+}
+.hero-dot-5 {
+  top: 45%;
+  left: 8%;
+  width: 2px;
+  height: 2px;
+  animation: heroFloat2 10s infinite ease-in-out;
+  animation-delay: -3s;
+}
+
+@keyframes heroFloat1 {
+  0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+  25% { transform: translate(15px, -20px); opacity: 0.6; }
+  50% { transform: translate(-10px, -35px); opacity: 0.4; }
+  75% { transform: translate(20px, -15px); opacity: 0.5; }
+}
+@keyframes heroFloat2 {
+  0%, 100% { transform: translate(0, 0); opacity: 0.2; }
+  33% { transform: translate(-20px, -15px); opacity: 0.5; }
+  66% { transform: translate(10px, -30px); opacity: 0.3; }
+}
+@keyframes heroFloat3 {
+  0%, 100% { transform: translate(0, 0); opacity: 0.25; }
+  50% { transform: translate(-15px, -25px); opacity: 0.45; }
+}
+
+/* Scroll down indicator */
+.scroll-indicator {
+  animation: scrollBounce 2s infinite ease-in-out;
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(8px); opacity: 0.8; }
+}
+
+/* Hero divider line expand */
+.hero-divider {
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+  margin: 0 auto;
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-divider.expanded {
+  width: 220px;
+}
+
+/* Lightbox slide transition */
+.lightbox-slide-enter {
+  opacity: 0;
+  transform: scale(0.96);
+}
+.lightbox-slide-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Upload progress bar */
+.upload-progress-bar {
+  height: 3px;
+  background: linear-gradient(90deg, #bf953f, #fcf6ba, #b38728);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Vault card download button hover glow */
+.vault-download-btn:hover {
+  background: #1a1a1a;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Gallery section fade-in on scroll */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-slide-up {
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

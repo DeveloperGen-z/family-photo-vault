@@ -4,9 +4,28 @@ interface SplashScreenProps {
   onComplete: () => void;
 }
 
-const TYPING_SPEED = 38;
-const SHOW_DURATION = 2400;
-const FADE_DURATION = 600;
+const TYPING_SPEED = 35;
+const SHOW_DURATION = 2600;
+const FADE_DURATION = 700;
+
+function AnimatedTitle({ text }: { text: string }) {
+  return (
+    <h1 className="splash-title" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+      {text.split("").map((char, i) => (
+        <span
+          key={i}
+          className="splash-char"
+          style={{
+            animationDelay: `${0.15 + i * 0.035}s`,
+            minWidth: char === " " ? "0.3em" : undefined,
+          }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </span>
+      ))}
+    </h1>
+  );
+}
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [fading, setFading] = useState(false);
@@ -41,8 +60,20 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       {/* Ambient glow */}
       <div className="splash-ambient-glow" />
 
-      {/* Title */}
-      <h1 className="splash-title">Family Photo Vault</h1>
+      {/* Second glow layer for depth */}
+      <div
+        className="absolute w-[250px] h-[250px] rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(252,246,186,0.04) 0%, transparent 60%)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "splashPulseGlow 5s 1s infinite alternate ease-in-out",
+        }}
+      />
+
+      {/* Title — character-by-character reveal */}
+      <AnimatedTitle text="Family Photo Vault" />
 
       {/* Divider line */}
       <div className="splash-divider" />

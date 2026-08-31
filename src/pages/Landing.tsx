@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Upload, Shield, Download } from "lucide-react";
+import { Camera, Upload, Shield, ChevronDown } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import SplashScreen from "@/components/SplashScreen";
@@ -8,34 +8,30 @@ import AdminLoginModal from "@/components/AdminLoginModal";
 import UploadModal from "@/components/UploadModal";
 import PhotoLightbox from "@/components/PhotoLightbox";
 
-function useTypewriter(text: string, speed = 50, startDelay = 0) {
+/* ─── Typewriter hook ─── */
+function useTypewriter(text: string, speed = 55, enabled = false) {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
 
   useEffect(() => {
+    if (!enabled) return;
     let i = 0;
-    let timer: ReturnType<typeof setTimeout>;
-
-    const startTimeout = setTimeout(() => {
-      const interval = setInterval(() => {
-        if (i < text.length) {
-          setDisplayed(text.slice(0, i + 1));
-          i++;
-        } else {
-          setDone(true);
-          clearInterval(interval);
-        }
-      }, speed);
-      return () => clearInterval(interval);
-    }, startDelay);
-
-    timer = startTimeout;
-    return () => clearTimeout(timer);
-  }, [text, speed, startDelay]);
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayed(text.slice(0, i + 1));
+        i++;
+      } else {
+        setDone(true);
+        clearInterval(interval);
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed, enabled]);
 
   return { displayed, done };
 }
 
+/* ─── Gallery card with shimmer + scroll reveal ─── */
 function GalleryCard({
   photo,
   index,
@@ -52,25 +48,21 @@ function GalleryCard({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setTimeout(() => setVisible(true), (index % 4) * 80);
+          setTimeout(() => setVisible(true), (index % 4) * 100);
           observer.unobserve(el);
         }
       },
-      { threshold: 0.1, rootMargin: "0px 0px -20px 0px" },
+      { threshold: 0.08, rootMargin: "0px 0px -30px 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, [index]);
 
   return (
-    <div
-      ref={ref}
-      className={`vault-card ${visible ? "is-visible" : ""}`}
-    >
+    <div ref={ref} className={`vault-card ${visible ? "is-visible" : ""}`}>
       <div className="vault-card-img-wrap" onClick={onClick}>
         <img
           src={photo.url}
@@ -84,10 +76,10 @@ function GalleryCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            const link = document.createElement("a");
-            link.href = photo.url;
-            link.download = photo.fileName;
-            link.click();
+            const a = document.createElement("a");
+            a.href = photo.url;
+            a.download = photo.fileName;
+            a.click();
           }}
           className="vault-download-btn"
         >
@@ -103,11 +95,14 @@ function GalleryCard({
   );
 }
 
+/* ─── Main Landing ─── */
 export default function Landing() {
   const [showSplash, setShowSplash] = useState(() => {
     return !sessionStorage.getItem("vault_splash_seen");
   });
   const [galleryReady, setGalleryReady] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(false);
+  const [dividerExpanded, setDividerExpanded] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -116,25 +111,33 @@ export default function Landing() {
 
   const { displayed: galleryTitle, done: titleDone } = useTypewriter(
     "Family Memories",
-    50,
-    galleryReady ? 200 : 99999,
+    55,
+    galleryReady,
   );
 
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem("vault_splash_seen", "1");
     setShowSplash(false);
-    setTimeout(() => setGalleryReady(true), 100);
+    setTimeout(() => {
+      setGalleryReady(true);
+      setHeroVisible(true);
+      setTimeout(() => setDividerExpanded(true), 400);
+    }, 100);
   }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Splash Screen */}
+      {/* Splash */}
       <AnimatePresence>
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       </AnimatePresence>
 
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <nav
+        className={`sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl transition-all duration-700 ${
+          heroVisible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+        }`}
+      >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
@@ -166,22 +169,40 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section — minimal, dark, elegant */}
+      {/* Hero — dark, cinematic, premium */}
       <section className="relative overflow-hidden bg-[#050505]">
-        <div className="absolute inset-0">
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse at 50% 40%, rgba(212,175,55,0.06) 0%, transparent 60%)",
-            }}
-          />
-        </div>
-        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-light tracking-widest text-white/50 uppercase">
+        {/* Ambient glow */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 40%, rgba(212,175,55,0.06) 0%, transparent 55%)",
+          }}
+        />
+
+        {/* Floating gold dots */}
+        <div className="hero-dot hero-dot-1" />
+        <div className="hero-dot hero-dot-2" />
+        <div className="hero-dot hero-dot-3" />
+        <div className="hero-dot hero-dot-4" />
+        <div className="hero-dot hero-dot-5" />
+
+        <div className="relative mx-auto max-w-5xl px-6 py-28 text-center md:py-36">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-1.5 text-xs font-light tracking-widest text-white/40 uppercase backdrop-blur-sm"
+          >
             Private Family Gallery
-          </div>
-          <h1
+          </motion.div>
+
+          {/* Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-5xl font-semibold leading-tight text-white md:text-7xl"
             style={{ fontFamily: "var(--font-serif)" }}
           >
@@ -190,7 +211,7 @@ export default function Landing() {
               className="block mt-1"
               style={{
                 background:
-                  "linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)",
+                  "linear-gradient(135deg, #bf953f 0%, #fcf6ba 30%, #b38728 50%, #fbf5b7 70%, #aa771c 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -198,35 +219,66 @@ export default function Landing() {
             >
               Vault
             </span>
-          </h1>
-          <div className="mx-auto my-6 h-px w-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-          <p className="mx-auto max-w-xl text-base leading-relaxed text-white/50 font-light">
+          </motion.h1>
+
+          {/* Divider line */}
+          <div className={`hero-divider my-7 ${dividerExpanded ? "expanded" : ""}`} />
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="mx-auto max-w-xl text-base leading-relaxed text-white/45 font-light"
+          >
             Your family&apos;s memories, preserved in full quality. Browse,
             download, and share without compression or clutter.
-          </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          >
             <a
               href="#gallery"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.97]"
+              className="group inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.97]"
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-4 w-4 transition-transform group-hover:scale-110" />
               View Gallery
             </a>
             <button
               onClick={() => setShowUpload(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/15 active:scale-[0.97]"
+              className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/15 active:scale-[0.97]"
             >
-              <Upload className="h-4 w-4" />
+              <Upload className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:-translate-y-0.5" />
               Upload Photos
             </button>
-          </div>
+          </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={heroVisible ? { opacity: 1 } : {}}
+            transition={{ duration: 1, delay: 1.2 }}
+            className="mt-16"
+          >
+            <a href="#gallery" className="inline-flex flex-col items-center text-white/20 transition-colors hover:text-white/40">
+              <span className="mb-2 text-[10px] tracking-[3px] uppercase">Scroll</span>
+              <ChevronDown className="h-5 w-5 scroll-indicator" />
+            </a>
+          </motion.div>
         </div>
+
+        {/* Bottom fade */}
         <div className="absolute -bottom-1 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Gallery Section */}
-      <section id="gallery" className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-        <div className="mb-12 text-center">
+      <section id="gallery" className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+        <div className="mb-14 text-center">
           <h2
             className="gallery-title"
             style={{ fontFamily: "var(--font-serif)" }}
@@ -235,10 +287,14 @@ export default function Landing() {
             {!titleDone && <span className="gallery-title-cursor" />}
           </h2>
           {photos.length > 0 && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              {photos.length} photo{photos.length !== 1 ? "s" : ""} in the
-              vault
-            </p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5, duration: 0.6 }}
+              className="mt-3 text-sm text-muted-foreground"
+            >
+              {photos.length} photo{photos.length !== 1 ? "s" : ""} in the vault
+            </motion.p>
           )}
         </div>
 
@@ -254,7 +310,12 @@ export default function Landing() {
             ))}
           </div>
         ) : galleryReady ? (
-          <div className="mx-auto max-w-md rounded-3xl border border-border/40 bg-card py-20 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="mx-auto max-w-md rounded-3xl border border-border/40 bg-card py-20 text-center"
+          >
             <Camera className="mx-auto h-10 w-10 text-muted-foreground/30" />
             <p className="mt-4 text-base font-medium text-muted-foreground">
               No photos yet
@@ -262,14 +323,14 @@ export default function Landing() {
             <p className="mt-1 text-sm text-muted-foreground/60">
               Upload the first one to get started
             </p>
-          </div>
+          </motion.div>
         ) : null}
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 py-10 text-center">
+      <footer className="border-t border-border/40 py-12 text-center">
         <p
-          className="text-xs tracking-widest text-muted-foreground/50 uppercase"
+          className="text-xs tracking-widest text-muted-foreground/40 uppercase"
           style={{ fontFamily: "var(--font-body)" }}
         >
           Family Photo Vault &mdash; Preserving memories, together
