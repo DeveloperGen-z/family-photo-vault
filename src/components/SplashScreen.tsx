@@ -1,189 +1,168 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Shield } from "lucide-react";
 
-interface SplashScreenProps {
+interface Props {
   onComplete: () => void;
 }
 
-const TYPING_SPEED = 35;
-const SHOW_DURATION = 3200;
-const FADE_DURATION = 700;
-
-/* ── Handwriting-reveal: clipPath left-to-right with cursor ── */
-function HandwrittenLine({
-  text,
-  delay,
-  duration,
-  style,
-}: {
-  text: string;
-  delay: number;
-  duration: number;
-  style?: React.CSSProperties;
-}) {
-  const [progress, setProgress] = useState(0);
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setStarted(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-
-  useEffect(() => {
-    if (!started) return;
-    const t0 = performance.now();
-    let raf: number;
-    const tick = (now: number) => {
-      const p = Math.min((now - t0) / duration, 1);
-      setProgress(p);
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [started, duration]);
-
-  const pct = Math.round(progress * 100);
-
-  return (
-    <div className="relative inline-block" style={style}>
-      {/* Invisible full text to hold layout */}
-      <span style={{ opacity: 0, userSelect: "none" }}>{text}</span>
-      {/* Clipped reveal */}
-      <span className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
-        {text}
-      </span>
-      {/* Cursor at writing edge */}
-      {started && progress < 1 && (
-        <span
-          className="absolute top-0 h-full pointer-events-none"
-          style={{
-            left: `${pct}%`,
-            width: "2px",
-            background: "#d4af37",
-            animation: "splashBlink 0.6s infinite",
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-/* ── Character-by-character reveal for English title ── */
-function AnimatedTitle({ text, delay }: { text: string; delay: number }) {
-  return (
-    <h1
-      className="splash-title"
-      style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}
-    >
-      {text.split("").map((char, i) => (
-        <span
-          key={i}
-          className="splash-char"
-          style={{
-            animationDelay: `${delay + i * 0.035}s`,
-            minWidth: char === " " ? "0.3em" : undefined,
-          }}
-        >
-          {char === " " ? "\u00A0" : char}
-        </span>
-      ))}
-    </h1>
-  );
-}
-
-export default function SplashScreen({ onComplete }: SplashScreenProps) {
-  const [fading, setFading] = useState(false);
-  const [typedText, setTypedText] = useState("");
+export default function SplashScreen({ onComplete }: Props) {
+  const [phase, setPhase] = useState<"writing" | "title" | "done">("writing");
+  const [hindiLine1, setHindiLine1] = useState("");
+  const [hindiLine2, setHindiLine2] = useState("");
+  const [titleChars, setTitleChars] = useState<string[]>([]);
+  const [showSubtitle, setShowSubtitle] = useState(false);
+  const [showTagline, setShowTagline] = useState(false);
+  const [showTypewriter, setShowTypewriter] = useState(false);
+  const [showFooter, setShowFooter] = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
   const completedRef = useRef(false);
-  const fullText = "Loading your memories\u2026";
 
+  const hindi1 = "बड़ोलिया";
+  const hindi2 = "परिवार";
+  const titleText = "Sweet Family Photos";
+  const typewriterText = "BRINGING YOUR MOMENTS TO LIFE…";
+
+  // Phase 1: Write Hindi text
   useEffect(() => {
     let i = 0;
-    const timer = setInterval(() => {
-      if (i < fullText.length) {
-        setTypedText(fullText.slice(0, i + 1));
+    const interval = setInterval(() => {
+      if (i < hindi1.length) {
+        setHindiLine1(hindi1.slice(0, i + 1));
         i++;
       } else {
-        clearInterval(timer);
+        clearInterval(interval);
+        // Start writing line 2
+        let j = 0;
+        const interval2 = setInterval(() => {
+          if (j < hindi2.length) {
+            setHindiLine2(hindi2.slice(0, j + 1));
+            j++;
+          } else {
+            clearInterval(interval2);
+            setPhase("title");
+          }
+        }, 120);
       }
-    }, TYPING_SPEED);
-    return () => clearInterval(timer);
+    }, 140);
+    return () => clearInterval(interval);
   }, []);
 
-  const doComplete = useCallback(() => {
-    if (completedRef.current) return;
-    completedRef.current = true;
-    onComplete();
+  // Phase 2: Reveal title characters
+  useEffect(() => {
+    if (phase !== "title") return;
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < titleText.length) {
+        setTitleChars((prev) => [...prev, titleText[i]]);
+        i++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => setShowSubtitle(true), 200);
+        setTimeout(() => setShowTagline(true), 500);
+        setTimeout(() => setShowTypewriter(true), 800);
+        setTimeout(() => setShowFooter(true), 1000);
+        // Auto-complete after all elements shown
+        setTimeout(() => {
+          setPhase("done");
+          setFadeOut(true);
+          setTimeout(() => {
+            if (!completedRef.current) {
+              completedRef.current = true;
+              onComplete();
+            }
+          }, 700);
+        }, 3500);
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, [phase, onComplete]);
+
+  // Safety net
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!completedRef.current) {
+        completedRef.current = true;
+        onComplete();
+      }
+    }, 6000);
+    return () => clearTimeout(timer);
   }, [onComplete]);
 
-  useEffect(() => {
-    const fadeTimer = setTimeout(() => {
-      setFading(true);
-      setTimeout(doComplete, FADE_DURATION);
-    }, SHOW_DURATION);
-    return () => clearTimeout(fadeTimer);
-  }, [doComplete]);
-
-  useEffect(() => {
-    const safetyTimer = setTimeout(() => doComplete(), 6000);
-    return () => clearTimeout(safetyTimer);
-  }, [doComplete]);
-
   return (
-    <div
-      className={`splash-screen ${fading ? "fade-out" : ""}`}
-      style={{ opacity: fading ? 0 : 1 }}
-    >
+    <div className={`splash-screen ${fadeOut ? "fade-out" : ""}`}>
       {/* Ambient glow */}
       <div className="splash-ambient-glow" />
 
-      {/* ── TOP: Hindi Handwritten Branding ── */}
+      {/* Hindi branding — top left */}
       <div className="splash-branding-top">
         <div className="splash-hindi-writing">
-          <HandwrittenLine
-            text="बडोलिया"
-            delay={300}
-            duration={900}
-          />
-        </div>
-        <div className="splash-hindi-writing splash-hindi-second-line">
-          <HandwrittenLine
-            text="परिवार"
-            delay={1250}
-            duration={700}
-          />
+          <span>{hindiLine1}</span>
+          <div className="splash-hindi-second-line">
+            <span>{hindiLine2}</span>
+          </div>
         </div>
       </div>
 
-      {/* ── CENTER: Title + Subtitle + Loading ── */}
+      {/* Center content */}
       <div className="splash-center-content">
-        <AnimatedTitle text="Sweet Family Photos" delay={0.15} />
+        {/* Title — character by character */}
+        <div className="splash-title">
+          {titleChars.map((char, i) => (
+            <span key={i} className="splash-char" style={{ animationDelay: `${i * 0.03}s` }}>
+              {char === " " ? "\u00A0" : char}
+            </span>
+          ))}
+        </div>
 
+        {/* Divider */}
         <div className="splash-divider" />
 
-        <p className="splash-subtitle">Private Family Gallery</p>
-        <p className="splash-tagline">Preserving memories, together</p>
+        {/* Subtitle */}
+        <div className="splash-subtitle" style={{ animationDelay: showSubtitle ? "0s" : "99s", opacity: showSubtitle ? undefined : 0, transform: showSubtitle ? undefined : "translateY(12px)" }}>
+          PRIVATE FAMILY GALLERY
+        </div>
 
-        <div className="splash-typewriter">
-          {typedText}
-          <span className="splash-cursor" />
+        {/* Tagline */}
+        <div className="splash-tagline" style={{ animationDelay: showTagline ? "0s" : "99s", opacity: showTagline ? undefined : 0, transform: showTagline ? undefined : "translateY(12px)" }}>
+          Preserving memories, together
+        </div>
+
+        {/* Typewriter */}
+        <div className="splash-typewriter" style={{ opacity: showTypewriter ? 1 : 0, transition: "opacity 0.5s ease" }}>
+          {showTypewriter && <TypewriterText text={typewriterText} />}
         </div>
       </div>
 
-      {/* ── BOTTOM: Lock icon + powered by Rajnish ── */}
-      <div className="splash-footer-credit">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" fill="rgba(212,175,55,0.5)" stroke="#d4af37" strokeWidth="1.5" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#d4af37" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-          <circle cx="12" cy="16" r="1.5" fill="#d4af37" />
-        </svg>
-        <span>powered by Rajnish</span>
+      {/* Footer credit */}
+      <div className="splash-footer-credit" style={{ opacity: showFooter ? undefined : 0, transform: showFooter ? undefined : "translateY(8px)" }}>
+        <Shield className="h-3 w-3" style={{ opacity: showFooter ? undefined : 0, animation: showFooter ? "splashSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards" : "none" }} />
+        <span style={{ animation: showFooter ? "splashSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.1s" : "none", opacity: showFooter ? undefined : 0 }}>
+          powered by Rajnish
+        </span>
       </div>
     </div>
+  );
+}
+
+/* Typewriter sub-component */
+function TypewriterText({ text }: { text: string }) {
+  const [displayed, setDisplayed] = useState("");
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayed(text.slice(0, i + 1));
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 35);
+    return () => clearInterval(interval);
+  }, [text]);
+  return (
+    <>
+      {displayed}
+      <span className="splash-cursor" />
+    </>
   );
 }

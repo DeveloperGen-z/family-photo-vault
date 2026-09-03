@@ -51,29 +51,29 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ duration: 0.2 }}
-        className="w-full max-w-md overflow-hidden rounded-3xl border border-border/60 bg-card shadow-2xl"
+        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        className="w-full max-w-md overflow-hidden rounded-3xl border border-border/40 bg-card shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border/30 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Shield className="h-5 w-5 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#C8A96E]/10">
+              <Shield className="h-5 w-5 text-[#C8A96E]" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-foreground" style={{ fontFamily: "var(--font-serif)" }}>Admin Access</h2>
               <p className="text-xs text-muted-foreground">
                 Enter the admin password to continue
               </p>
-              <p className="mt-1 text-[10px] text-muted-foreground/60">
+              <p className="mt-1 text-[10px] text-muted-foreground/50">
                 For password, contact developer Rajnish
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="rounded-2xl p-2 text-muted-foreground transition-all duration-300 hover:bg-muted hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
@@ -87,7 +87,7 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
                 <input
                   type="password"
                   value={password}
@@ -97,7 +97,7 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
                   }}
                   placeholder="Enter admin password"
                   autoFocus
-                  className="w-full rounded-xl border border-input bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full rounded-2xl border border-border/40 bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground/30 focus:border-[#C8A96E]/40 focus:outline-none focus:ring-2 focus:ring-[#C8A96E]/10 transition-all duration-300"
                 />
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
               <motion.p
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-lg bg-destructive/10 px-4 py-2.5 text-sm text-destructive"
+                className="rounded-2xl bg-[#DC4A3F]/10 px-4 py-2.5 text-sm text-[#DC4A3F]"
               >
                 {error}
               </motion.p>
@@ -115,7 +115,7 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
             <button
               type="submit"
               disabled={isLoading || !password.trim()}
-              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-2xl bg-[#1A1714] py-3 text-sm font-semibold text-[#FAF8F5] shadow-sm transition-all duration-300 hover:bg-[#2E2820] hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <span className="inline-flex items-center gap-2">
