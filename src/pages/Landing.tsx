@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Camera, Upload, Shield, ChevronDown } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -100,9 +100,9 @@ export default function Landing() {
   const [showSplash, setShowSplash] = useState(() => {
     return !sessionStorage.getItem("vault_splash_seen");
   });
-  const [galleryReady, setGalleryReady] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(false);
-  const [dividerExpanded, setDividerExpanded] = useState(false);
+  const [galleryReady, setGalleryReady] = useState(!showSplash);
+  const [heroVisible, setHeroVisible] = useState(!showSplash);
+  const [dividerExpanded, setDividerExpanded] = useState(!showSplash);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -118,21 +118,17 @@ export default function Landing() {
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem("vault_splash_seen", "1");
     setShowSplash(false);
-    setTimeout(() => {
-      setGalleryReady(true);
-      setHeroVisible(true);
-      setTimeout(() => setDividerExpanded(true), 400);
-    }, 100);
+    setGalleryReady(true);
+    setHeroVisible(true);
+    setTimeout(() => setDividerExpanded(true), 400);
   }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Splash */}
-      <AnimatePresence>
-        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-      </AnimatePresence>
+      {/* Splash — self-managed fade, no AnimatePresence */}
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
-      {/* Navigation */}
+      {/* Navigation — always visible after splash */}
       <nav
         className={`sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl transition-all duration-700 ${
           heroVisible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
@@ -190,8 +186,8 @@ export default function Landing() {
         <div className="relative mx-auto max-w-5xl px-6 py-28 text-center md:py-36">
           {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            initial={heroVisible ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-1.5 text-xs font-light tracking-widest text-white/40 uppercase backdrop-blur-sm"
           >
@@ -200,8 +196,8 @@ export default function Landing() {
 
           {/* Title */}
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            initial={heroVisible ? false : { opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-5xl font-semibold leading-tight text-white md:text-7xl"
             style={{ fontFamily: "var(--font-serif)" }}
@@ -226,8 +222,8 @@ export default function Landing() {
 
           {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            initial={heroVisible ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="mx-auto max-w-xl text-base leading-relaxed text-white/45 font-light"
           >
@@ -237,8 +233,8 @@ export default function Landing() {
 
           {/* CTAs */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={heroVisible ? { opacity: 1, y: 0 } : {}}
+            initial={heroVisible ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
             className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
           >
@@ -260,8 +256,8 @@ export default function Landing() {
 
           {/* Scroll indicator */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={heroVisible ? { opacity: 1 } : {}}
+            initial={heroVisible ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.2 }}
             className="mt-16"
           >
@@ -338,21 +334,19 @@ export default function Landing() {
       </footer>
 
       {/* Modals */}
-      <AnimatePresence>
-        {showAdminLogin && (
-          <AdminLoginModal onClose={() => setShowAdminLogin(false)} />
-        )}
-        {showUpload && (
-          <UploadModal onClose={() => setShowUpload(false)} />
-        )}
-        {lightboxIndex !== null && (
-          <PhotoLightbox
-            photos={photos}
-            initialIndex={lightboxIndex}
-            onClose={() => setLightboxIndex(null)}
-          />
-        )}
-      </AnimatePresence>
+      {showAdminLogin && (
+        <AdminLoginModal onClose={() => setShowAdminLogin(false)} />
+      )}
+      {showUpload && (
+        <UploadModal onClose={() => setShowUpload(false)} />
+      )}
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
     </div>
   );
 }
