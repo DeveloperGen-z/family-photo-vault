@@ -138,17 +138,15 @@ export default function Landing() {
         <div className="absolute inset-0 bg-background/70 backdrop-blur-2xl border-b border-white/[0.06]" />
 
         <div className="relative mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5 sm:px-6 sm:py-3">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
+          {/* Logo — Hindi branding */}
+          <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10">
               <Camera className="h-4 w-4 text-primary" />
             </div>
-            <span
-              className="hidden text-sm font-bold tracking-tight text-foreground sm:block"
-              style={{ fontFamily: "var(--font-serif)" }}
-            >
-              Family Photo Vault
-            </span>
+            <div className="flex flex-col leading-none" style={{ fontFamily: "var(--font-handwritten)" }}>
+              <span className="text-sm font-bold tracking-wide text-foreground sm:text-base">बड़ोलिया</span>
+              <span className="text-[10px] font-bold tracking-wide text-foreground/70 sm:text-xs" style={{ marginLeft: "auto" }}>परिवार</span>
+            </div>
           </div>
 
           {/* Actions — icon on mobile, text on desktop */}
@@ -189,26 +187,26 @@ export default function Landing() {
         <div className="hero-dot hero-dot-4" />
         <div className="hero-dot hero-dot-5" />
 
-        <div className="relative mx-auto max-w-5xl px-6 py-28 text-center md:py-36">
-          {/* Badge */}
+        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
+          {/* Badge — smaller */}
           <motion.div
             initial={heroVisible ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-1.5 text-xs font-light tracking-widest text-white/40 uppercase backdrop-blur-sm"
+            className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-[10px] font-light tracking-widest text-white/35 uppercase backdrop-blur-sm sm:text-xs"
           >
             Private Family Gallery
           </motion.div>
 
-          {/* Title */}
+          {/* Title — Sweet Family's Photos */}
           <motion.h1
             initial={heroVisible ? false : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl font-semibold leading-tight text-white md:text-7xl"
+            className="text-4xl font-semibold leading-tight text-white md:text-6xl"
             style={{ fontFamily: "var(--font-serif)" }}
           >
-            Family Photo
+            Sweet Family&apos;s
             <span
               className="block mt-1"
               style={{
@@ -219,22 +217,21 @@ export default function Landing() {
                 backgroundClip: "text",
               }}
             >
-              Vault
+              Photos
             </span>
           </motion.h1>
 
           {/* Divider line */}
-          <div className={`hero-divider my-7 ${dividerExpanded ? "expanded" : ""}`} />
+          <div className={`hero-divider my-6 ${dividerExpanded ? "expanded" : ""}`} />
 
           {/* Subtitle */}
           <motion.p
             initial={heroVisible ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto max-w-xl text-base leading-relaxed text-white/45 font-light"
+            className="mx-auto max-w-lg text-sm leading-relaxed text-white/40 font-light sm:text-base"
           >
-            Your family&apos;s memories, preserved in full quality. Browse,
-            download, and share without compression or clutter.
+            Browse, download, and share your family&apos;s beautiful moments — in full quality, without compression or clutter.
           </motion.p>
 
           {/* CTAs */}
@@ -242,34 +239,34 @@ export default function Landing() {
             initial={heroVisible ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            className="mt-8 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4"
           >
             <a
               href="#gallery"
-              className="group inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.97]"
+              className="group inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-xs font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.97] sm:px-7 sm:py-3 sm:text-sm"
             >
               <Camera className="h-4 w-4 transition-transform group-hover:scale-110" />
               View Gallery
             </a>
             <button
               onClick={() => setShowUpload(true)}
-              className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-7 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/15 active:scale-[0.97]"
+              className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-6 py-2.5 text-xs font-medium text-white backdrop-blur-sm transition-all hover:bg-white/15 active:scale-[0.97] sm:px-7 sm:py-3 sm:text-sm"
             >
               <Upload className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:-translate-y-0.5" />
               Upload Photos
             </button>
           </motion.div>
 
-          {/* Scroll indicator */}
+          {/* Scroll indicator — smaller on mobile */}
           <motion.div
             initial={heroVisible ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.2 }}
-            className="mt-16"
+            className="mt-12 sm:mt-16"
           >
             <a href="#gallery" className="inline-flex flex-col items-center text-white/20 transition-colors hover:text-white/40">
-              <span className="mb-2 text-[10px] tracking-[3px] uppercase">Scroll</span>
-              <ChevronDown className="h-5 w-5 scroll-indicator" />
+              <span className="mb-1.5 text-[8px] tracking-[2px] uppercase sm:mb-2 sm:text-[10px] sm:tracking-[3px]">Scroll</span>
+              <ChevronDown className="h-4 w-4 scroll-indicator sm:h-5 sm:w-5" />
             </a>
           </motion.div>
         </div>
@@ -278,9 +275,9 @@ export default function Landing() {
         <div className="absolute -bottom-1 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
       </section>
 
-      {/* Gallery Section */}
-      <section id="gallery" className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-        <div className="mb-14 text-center">
+      {/* Gallery Section — shift title up slightly */}
+      <section id="gallery" className="mx-auto max-w-7xl px-6 pt-10 pb-16 md:pt-14 md:pb-24">
+        <div className="mb-12 text-center md:mb-14">
           <h2
             className="gallery-title"
             style={{ fontFamily: "var(--font-serif)" }}
@@ -293,9 +290,9 @@ export default function Landing() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5, duration: 0.6 }}
-              className="mt-3 text-sm text-muted-foreground"
+              className="mt-2 text-xs text-muted-foreground sm:text-sm"
             >
-              {photos.length} photo{photos.length !== 1 ? "s" : ""} in the vault
+              {photos.length} photo{photos.length !== 1 ? "s" : ""} in the collection
             </motion.p>
           )}
         </div>
@@ -329,13 +326,17 @@ export default function Landing() {
         ) : null}
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 py-12 text-center">
+      {/* Footer — developer credit + new slogan */}
+      <footer className="border-t border-border/40 py-10 text-center sm:py-12">
         <p
-          className="text-xs tracking-widest text-muted-foreground/40 uppercase"
-          style={{ fontFamily: "var(--font-body)" }}
+          className="mb-3 text-sm font-medium text-muted-foreground/70 italic sm:text-base"
+          style={{ fontFamily: "var(--font-serif)" }}
         >
-          Family Photo Vault &mdash; Preserving memories, together
+          A private space for our timeless memories
+        </p>
+        <p className="text-[10px] tracking-wider text-muted-foreground/40 sm:text-xs">
+          Designed &amp; Developed with <span className="text-red-400">&#10084;&#65039;</span> by{" "}
+          <span className="font-semibold text-muted-foreground/60">Rajnish</span>
         </p>
       </footer>
 

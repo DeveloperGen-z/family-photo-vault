@@ -66,6 +66,9 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
               <p className="text-xs text-muted-foreground">
                 Enter the admin password to continue
               </p>
+              <p className="mt-1 text-[10px] text-muted-foreground/60">
+                For password, contact developer Rajnish
+              </p>
             </div>
           </div>
           <button
