@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Upload, Image, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useMutation } from "convex/react";
@@ -109,6 +109,12 @@ export default function UploadModal({ onClose }: UploadModalProps) {
       return prev.filter((_, i) => i !== index);
     });
   };
+
+  // Auto-open file picker on mount
+  useEffect(() => {
+    const timer = setTimeout(() => fileInputRef.current?.click(), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const pendingFiles = files.filter((f) => f.status === "idle");
   const isUploading = files.some((f) => f.status === "uploading");
