@@ -112,8 +112,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
 
   // Auto-open file picker on mount
   useEffect(() => {
-    const timer = setTimeout(() => fileInputRef.current?.click(), 300);
-    return () => clearTimeout(timer);
+    fileInputRef.current?.click();
   }, []);
 
   const pendingFiles = files.filter((f) => f.status === "idle");
@@ -164,7 +163,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
           {/* Drop Zone */}
           <div
             onDragOver={handleDragOver}
