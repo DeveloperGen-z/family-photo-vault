@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Camera, Upload, ChevronDown, Check } from "lucide-react";
+import { Camera, Upload, ChevronDown, Check, Shield } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import SplashScreen from "@/components/SplashScreen";
@@ -389,12 +389,12 @@ export default function Landing() {
         ) : null}
       </section>
 
-      {/* Footer — developer credit */}
+      {/* Footer — admin icon + developer credit */}
       <footer className="border-t border-border/40 py-10 text-center sm:py-12">
-        <p className="text-[10px] tracking-wider text-muted-foreground/40 sm:text-xs">
-          Designed &amp; Developed with <span className="text-red-400">&#10084;&#65039;</span> by{" "}
-          <span className="font-semibold text-muted-foreground/60">Rajnish</span>
-        </p>
+        <div className="inline-flex items-center gap-2 text-[10px] tracking-wider text-muted-foreground/40 sm:text-xs">
+          <Shield className="h-3 w-3 text-muted-foreground/30" />
+          <span>Developed by <span className="font-semibold text-muted-foreground/60">Rajnish</span></span>
+        </div>
       </footer>
 
       {/* Modals */}

@@ -4,29 +4,60 @@ interface SplashScreenProps {
   onComplete: () => void;
 }
 
-const TYPING_SPEED = 35;
-const SHOW_DURATION = 2600;
+const SHOW_DURATION = 3200;
 const FADE_DURATION = 700;
+const CHAR_DELAY = 120; // ms per character for handwriting feel
 
-function AnimatedTitle({ text }: { text: string }) {
+/* ─── Handwriting text: appears char-by-char with ink-reveal ─── */
+function HandwrittenText({
+  text,
+  startDelay,
+  className,
+  style,
+}: {
+  text: string;
+  startDelay: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const [revealed, setRevealed] = useState(0);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => {
+      let count = 0;
+      const interval = setInterval(() => {
+        count++;
+        setRevealed(count);
+        if (count >= text.length) clearInterval(interval);
+      }, CHAR_DELAY);
+      return () => clearInterval(interval);
+    }, startDelay);
+    return () => clearTimeout(startTimer);
+  }, [text, startDelay]);
+
   return (
-    <h1
-      className="splash-title"
-      style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}
-    >
+    <span className={className} style={style}>
       {text.split("").map((char, i) => (
         <span
           key={i}
-          className="splash-char"
+          className="handwritten-char"
           style={{
-            animationDelay: `${0.15 + i * 0.035}s`,
+            opacity: i < revealed ? 1 : 0,
+            transform: i < revealed ? "translateY(0)" : "translateY(8px)",
+            filter: i < revealed ? "blur(0)" : "blur(3px)",
+            transition: "opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease",
+            display: "inline-block",
             minWidth: char === " " ? "0.3em" : undefined,
           }}
         >
           {char === " " ? "\u00A0" : char}
         </span>
       ))}
-    </h1>
+      {/* Blinking cursor while writing */}
+      {revealed < text.length && (
+        <span className="splash-cursor" />
+      )}
+    </span>
   );
 }
 
@@ -46,18 +77,18 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       } else {
         clearInterval(timer);
       }
-    }, TYPING_SPEED);
+    }, 35);
     return () => clearInterval(timer);
   }, []);
 
-  // Complete callback — guarded against double-fire
+  // Complete callback
   const doComplete = useCallback(() => {
     if (completedRef.current) return;
     completedRef.current = true;
     onComplete();
   }, [onComplete]);
 
-  // Main timer: show for SHOW_DURATION, then fade
+  // Main timer
   useEffect(() => {
     const fadeTimer = setTimeout(() => {
       setFading(true);
@@ -68,9 +99,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
   // Safety net
   useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      doComplete();
-    }, 5000);
+    const safetyTimer = setTimeout(() => doComplete(), 6000);
     return () => clearTimeout(safetyTimer);
   }, [doComplete]);
 
@@ -82,12 +111,11 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       {/* Ambient glow */}
       <div className="splash-ambient-glow" />
 
-      {/* Second glow layer */}
+      {/* Second glow */}
       <div
         className="absolute w-[250px] h-[250px] rounded-full pointer-events-none"
         style={{
-          background:
-            "radial-gradient(circle, rgba(252,246,186,0.04) 0%, transparent 60%)",
+          background: "radial-gradient(circle, rgba(252,246,186,0.04) 0%, transparent 60%)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
@@ -95,17 +123,27 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         }}
       />
 
-      {/* Title — character-by-character reveal */}
-      <AnimatedTitle text="Family Photo Vault" />
+      {/* Hindi handwriting — बड़ौलिया top, परिवार below */}
+      <div className="splash-branding" style={{ textAlign: "center" }}>
+        <HandwrittenText
+          text="बड़ौलिया"
+          startDelay={300}
+          className="splash-hindi-line"
+          style={{ justifyContent: "center" }}
+        />
+        <HandwrittenText
+          text="परिवार"
+          startDelay={300 + 8 * CHAR_DELAY}
+          className="splash-hindi-line"
+          style={{ justifyContent: "center" }}
+        />
+      </div>
 
       {/* Divider */}
       <div className="splash-divider" />
 
       {/* Subtitle */}
-      <p className="splash-subtitle">Private Family Gallery</p>
-
-      {/* Tagline */}
-      <p className="splash-tagline">Preserving memories, together</p>
+      <p className="splash-subtitle">Sweet Family&apos;s Photos</p>
 
       {/* Typewriter */}
       <div className="splash-typewriter">
@@ -114,7 +152,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       </div>
 
       {/* Watermark */}
-      <div className="splash-watermark">Family Photo Vault</div>
+      <div className="splash-watermark">बड़ौलिया परिवार</div>
     </div>
   );
 }
