@@ -233,7 +233,7 @@ export default function Dashboard() {
 
   const handleClearLogs = async () => {
     try {
-      await clearLogs({ password: currentPw || "" });
+      await clearLogs({});
       setClearLogsConfirm(false);
       showToast("Activity logs cleared");
     } catch (err: any) {
@@ -626,8 +626,8 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="mt-4 space-y-2.5">
-                  <InfoRow label="Upload Password" value="121520" />
-                  <InfoRow label="Admin Password" value={passwordStatus?.hasPassword ? `Set (${passwordStatus.passwordLength} chars)` : "None"} />
+                  <InfoRow label="Upload Password" value={passwordStatus?.hasUploadPassword ? passwordStatus.uploadPassword : "None (open)"} />
+                  <InfoRow label="Admin Password" value={passwordStatus?.hasAdminPassword ? `Set (${passwordStatus.adminPasswordLength} chars)` : "None (open)"} />
                   <InfoRow label="Total Photos" value={String(stats?.totalPhotos ?? 0)} />
                   <InfoRow label="Approved" value={String(stats?.approvedPhotos ?? 0)} />
                   <InfoRow label="Pending" value={String(stats?.pendingPhotos ?? 0)} />

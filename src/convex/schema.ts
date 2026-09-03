@@ -52,11 +52,32 @@ const schema = defineSchema(
       timestamp: v.number(),
     }).index("by_timestamp", ["timestamp"]),
 
-    // Site settings (admin password, etc.)
+    // Site settings (admin password, upload password, etc.)
     siteSettings: defineTable({
       key: v.string(),
       value: v.string(),
     }).index("by_key", ["key"]),
+
+    // Visitor tracking
+    visitors: defineTable({
+      ip: v.string(),
+      userAgent: v.string(),
+      page: v.string(),
+      country: v.optional(v.string()),
+      city: v.optional(v.string()),
+      device: v.optional(v.string()), // "mobile" | "desktop" | "tablet"
+      timestamp: v.number(),
+    }).index("by_timestamp", ["timestamp"])
+      .index("by_ip", ["ip"]),
+
+    // Photo view/download tracking
+    photoViews: defineTable({
+      photoId: v.id("photos"),
+      action: v.string(), // "view" | "download"
+      ip: v.string(),
+      timestamp: v.number(),
+    }).index("by_photoId", ["photoId"])
+      .index("by_timestamp", ["timestamp"]),
   },
   {
     schemaValidation: false,

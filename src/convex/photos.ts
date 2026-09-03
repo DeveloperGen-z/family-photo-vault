@@ -1,7 +1,17 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-/** Generate a signed upload URL for a file to be stored in Convex storage. */
+const DEFAULT_UPLOAD_PASSWORD = "121520";
+
+async function getSetting(ctx: any, key: string, defaultVal: string) {
+  const setting = await ctx.db
+    .query("siteSettings")
+    .withIndex("by_key", (q: any) => q.eq("key", key))
+    .first();
+  return setting?.value ?? defaultVal;
+}
+
+/** Generate a signed upload URL. */
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
@@ -9,7 +19,7 @@ export const generateUploadUrl = mutation({
   },
 });
 
-/** Save a photo record after the file has been uploaded to Convex storage. */
+/** Save a photo record. */
 export const uploadPhoto = mutation({
   args: {
     storageId: v.id("_storage"),
@@ -40,7 +50,56 @@ export const uploadPhoto = mutation({
   },
 });
 
-/** List all approved photos with their storage URLs. */
+/** Verify upload password and generate URL. */
+export const verifyUploadAndGenerateUrl = mutation({
+  args: {
+    password: v.string(),
+    fileName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const uploadPassword = await getSetting(ctx, "upload_password", DEFAULT_UPLOAD_PASSWORD);
+
+    // If no password set, allow anyone
+    if (uploadPassword && args.password !== uploadPassword) {
+      throw new Error("Invalid upload password");
+    }
+
+    const uploadUrl = await ctx.storage.generateUploadUrl();
+    return uploadUrl;
+  },
+});
+
+/** Family upload (no password required — password removed by user request). */
+export const familyUpload = mutation({
+  args: {
+    storageId: v.id("_storage"),
+    fileName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Check auto-approve setting
+    const autoApprove = await getSetting(ctx, "auto_approve", "false");
+    const status = autoApprove === "true" ? "approved" : "pending";
+
+    const photoId = await ctx.db.insert("photos", {
+      storageId: args.storageId,
+      fileName: args.fileName,
+      status: status as any,
+      uploadedBy: "family",
+      uploadedAt: Date.now(),
+      approvedAt: status === "approved" ? Date.now() : undefined,
+    });
+
+    await ctx.db.insert("adminLogs", {
+      action: status === "approved" ? "photo_auto_approved" : "photo_upload",
+      details: `Photo "${args.fileName}" uploaded by family (status: ${status})`,
+      timestamp: Date.now(),
+    });
+
+    return photoId;
+  },
+});
+
+/** List all approved photos with URLs. */
 export const listApproved = query({
   args: {},
   handler: async (ctx) => {
@@ -49,24 +108,20 @@ export const listApproved = query({
       .withIndex("by_status", (q) => q.eq("status", "approved"))
       .order("desc")
       .collect();
-
     const results = [];
     for (const photo of photos) {
       const url = await ctx.storage.getUrl(photo.storageId);
-      if (url) {
-        results.push({ ...photo, url });
-      }
+      if (url) results.push({ ...photo, url });
     }
     return results;
   },
 });
 
-/** List all photos (admin view). */
+/** List all photos (admin). */
 export const listAll = query({
   args: {},
   handler: async (ctx) => {
     const photos = await ctx.db.query("photos").order("desc").collect();
-
     const results = [];
     for (const photo of photos) {
       const url = await ctx.storage.getUrl(photo.storageId);
@@ -76,7 +131,7 @@ export const listAll = query({
   },
 });
 
-/** List pending photos (admin view). */
+/** List pending photos. */
 export const listPending = query({
   args: {},
   handler: async (ctx) => {
@@ -85,7 +140,6 @@ export const listPending = query({
       .withIndex("by_status", (q) => q.eq("status", "pending"))
       .order("desc")
       .collect();
-
     const results = [];
     for (const photo of photos) {
       const url = await ctx.storage.getUrl(photo.storageId);
@@ -95,7 +149,7 @@ export const listPending = query({
   },
 });
 
-/** List rejected photos (admin view). */
+/** List rejected photos. */
 export const listRejected = query({
   args: {},
   handler: async (ctx) => {
@@ -104,7 +158,6 @@ export const listRejected = query({
       .withIndex("by_status", (q) => q.eq("status", "rejected"))
       .order("desc")
       .collect();
-
     const results = [];
     for (const photo of photos) {
       const url = await ctx.storage.getUrl(photo.storageId);
@@ -114,15 +167,11 @@ export const listRejected = query({
   },
 });
 
-/** Approve a pending photo. */
+/** Approve a photo. */
 export const approvePhoto = mutation({
   args: { photoId: v.id("photos") },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.photoId, {
-      status: "approved",
-      approvedAt: Date.now(),
-    });
-
+    await ctx.db.patch(args.photoId, { status: "approved", approvedAt: Date.now() });
     const photo = await ctx.db.get(args.photoId);
     await ctx.db.insert("adminLogs", {
       action: "photo_approved",
@@ -132,12 +181,11 @@ export const approvePhoto = mutation({
   },
 });
 
-/** Reject a pending photo. */
+/** Reject a photo. */
 export const rejectPhoto = mutation({
   args: { photoId: v.id("photos") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.photoId, { status: "rejected" });
-
     const photo = await ctx.db.get(args.photoId);
     await ctx.db.insert("adminLogs", {
       action: "photo_rejected",
@@ -147,12 +195,11 @@ export const rejectPhoto = mutation({
   },
 });
 
-/** Restore a rejected photo back to pending. */
+/** Restore rejected → pending. */
 export const restorePhoto = mutation({
   args: { photoId: v.id("photos") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.photoId, { status: "pending" });
-
     const photo = await ctx.db.get(args.photoId);
     await ctx.db.insert("adminLogs", {
       action: "photo_restored",
@@ -162,7 +209,7 @@ export const restorePhoto = mutation({
   },
 });
 
-/** Delete a photo from the database and storage. */
+/** Delete a photo. */
 export const deletePhoto = mutation({
   args: { photoId: v.id("photos") },
   handler: async (ctx, args) => {
@@ -170,7 +217,6 @@ export const deletePhoto = mutation({
     if (photo) {
       await ctx.storage.delete(photo.storageId);
       await ctx.db.delete(args.photoId);
-
       await ctx.db.insert("adminLogs", {
         action: "photo_deleted",
         details: `Photo "${photo.fileName}" deleted`,
@@ -180,7 +226,7 @@ export const deletePhoto = mutation({
   },
 });
 
-/** Bulk delete multiple photos. */
+/** Bulk delete. */
 export const bulkDelete = mutation({
   args: { photoIds: v.array(v.id("photos")) },
   handler: async (ctx, args) => {
@@ -193,7 +239,6 @@ export const bulkDelete = mutation({
         count++;
       }
     }
-
     if (count > 0) {
       await ctx.db.insert("adminLogs", {
         action: "bulk_deleted",
@@ -201,12 +246,11 @@ export const bulkDelete = mutation({
         timestamp: Date.now(),
       });
     }
-
     return count;
   },
 });
 
-/** Reject all pending photos at once. */
+/** Reject all pending. */
 export const rejectAll = mutation({
   args: {},
   handler: async (ctx) => {
@@ -214,13 +258,11 @@ export const rejectAll = mutation({
       .query("photos")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
       .collect();
-
     let count = 0;
     for (const photo of pending) {
       await ctx.db.patch(photo._id, { status: "rejected" });
       count++;
     }
-
     if (count > 0) {
       await ctx.db.insert("adminLogs", {
         action: "bulk_rejected",
@@ -228,12 +270,11 @@ export const rejectAll = mutation({
         timestamp: Date.now(),
       });
     }
-
     return count;
   },
 });
 
-/** Approve all pending photos at once. */
+/** Approve all pending. */
 export const approveAll = mutation({
   args: {},
   handler: async (ctx) => {
@@ -241,16 +282,11 @@ export const approveAll = mutation({
       .query("photos")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
       .collect();
-
     let count = 0;
     for (const photo of pending) {
-      await ctx.db.patch(photo._id, {
-        status: "approved",
-        approvedAt: Date.now(),
-      });
+      await ctx.db.patch(photo._id, { status: "approved", approvedAt: Date.now() });
       count++;
     }
-
     if (count > 0) {
       await ctx.db.insert("adminLogs", {
         action: "bulk_approved",
@@ -258,12 +294,11 @@ export const approveAll = mutation({
         timestamp: Date.now(),
       });
     }
-
     return count;
   },
 });
 
-/** Get total photo counts. */
+/** Get photo counts. */
 export const getPhotoCount = query({
   args: {},
   handler: async (ctx) => {
@@ -274,22 +309,5 @@ export const getPhotoCount = query({
       pending: all.filter((p) => p.status === "pending").length,
       rejected: all.filter((p) => p.status === "rejected").length,
     };
-  },
-});
-
-/** Verify user upload password and return upload URL. */
-export const verifyUploadAndGenerateUrl = mutation({
-  args: {
-    password: v.string(),
-    fileName: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const UPLOAD_PASSWORD = "121520";
-    if (args.password !== UPLOAD_PASSWORD) {
-      throw new Error("Invalid upload password");
-    }
-
-    const uploadUrl = await ctx.storage.generateUploadUrl();
-    return uploadUrl;
   },
 });
