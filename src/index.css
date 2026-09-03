@@ -512,7 +512,13 @@
 }
 
 .vault-card-actions {
-  padding: 16px;
+  padding: 12px 12px 14px;
+}
+
+@media (max-width: 640px) {
+  .vault-card-actions {
+    padding: 8px 10px 10px;
+  }
 }
 
 .vault-download-btn {
@@ -521,18 +527,28 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 13px;
+  padding: 12px;
   background: #111111;
   color: #ffffff;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   border-radius: 12px;
   border: none;
   transition: all 0.2s ease;
   text-decoration: none;
+  min-height: 44px;
+}
+
+@media (max-width: 640px) {
+  .vault-download-btn {
+    padding: 14px;
+    font-size: 0.8rem;
+    border-radius: 10px;
+    min-height: 48px;
+  }
 }
 
 .vault-download-btn:hover {
@@ -773,26 +789,34 @@ nav {
 
 /* Download button — loading state */
 .vault-download-btn.is-loading {
-  background: #1a1a1a;
+  background: #333333;
   pointer-events: none;
-  opacity: 0.85;
 }
 
 /* Download button — success state */
 .vault-download-btn.is-done {
-  background: #166534;
+  background: #15803d;
   color: #ffffff;
+  box-shadow: 0 2px 12px rgba(22, 101, 52, 0.3);
 }
 
 /* Spinner animation */
 .download-spinner {
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #ffffff;
   border-radius: 50%;
   animation: downloadSpin 0.6s linear infinite;
+}
+
+@media (max-width: 640px) {
+  .download-spinner {
+    width: 18px;
+    height: 18px;
+    border-width: 2.5px;
+  }
 }
 
 @keyframes downloadSpin {
