@@ -156,7 +156,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
 
       {/* ── CENTER: Title + Subtitle + Loading ── */}
       <div className="splash-center-content">
-        <AnimatedTitle text="Family Photo Vault" delay={0.15} />
+        <AnimatedTitle text="Sweet Family Photos" delay={0.15} />
 
         <div className="splash-divider" />
 
