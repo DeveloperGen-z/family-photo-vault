@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Camera, Upload, ChevronDown } from "lucide-react";
+import { Camera, Upload, ChevronDown, Check } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import SplashScreen from "@/components/SplashScreen";
@@ -9,7 +9,13 @@ import UploadModal from "@/components/UploadModal";
 import PhotoLightbox from "@/components/PhotoLightbox";
 
 /* ─── Direct download helper (works with cross-origin URLs) ─── */
-async function directDownload(url: string, fileName: string) {
+async function directDownload(
+  url: string,
+  fileName: string,
+  onLoading?: () => void,
+  onDone?: () => void,
+) {
+  onLoading?.();
   try {
     const res = await fetch(url);
     const blob = await res.blob();
@@ -22,9 +28,9 @@ async function directDownload(url: string, fileName: string) {
     document.body.removeChild(a);
     URL.revokeObjectURL(blobUrl);
   } catch {
-    // Fallback: open in new tab
     window.open(url, "_blank");
   }
+  onDone?.();
 }
 
 /* ─── Typewriter hook ─── */
@@ -48,6 +54,56 @@ function useTypewriter(text: string, speed = 55, enabled = false) {
   }, [text, speed, enabled]);
 
   return { displayed, done };
+}
+
+/* ─── Download button states ─── */
+function DownloadButton({
+  url,
+  fileName,
+}: {
+  url: string;
+  fileName: string;
+}) {
+  const [state, setState] = useState<"idle" | "loading" | "done">("idle");
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (state !== "idle") return;
+    directDownload(url, fileName, () => setState("loading"), () => {
+      setState("done");
+      setTimeout(() => setState("idle"), 2000);
+    });
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`vault-download-btn ${state === "loading" ? "is-loading" : ""} ${state === "done" ? "is-done" : ""}`}
+    >
+      {state === "idle" && (
+        <>
+          <svg className="vault-download-icon" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download
+        </>
+      )}
+      {state === "loading" && (
+        <>
+          <span className="download-spinner" />
+          Downloading…
+        </>
+      )}
+      {state === "done" && (
+        <>
+          <Check className="h-3.5 w-3.5" />
+          Downloaded
+        </>
+      )}
+    </button>
+  );
 }
 
 /* ─── Gallery card with shimmer + scroll reveal ─── */
@@ -92,20 +148,7 @@ function GalleryCard({
         />
       </div>
       <div className="vault-card-actions">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            directDownload(photo.url, photo.fileName);
-          }}
-          className="vault-download-btn"
-        >
-          <svg className="vault-download-icon" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
-          Download
-        </button>
+        <DownloadButton url={photo.url} fileName={photo.fileName} />
       </div>
     </div>
   );

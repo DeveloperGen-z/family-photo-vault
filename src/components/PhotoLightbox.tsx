@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Download, ChevronLeft, ChevronRight, Check } from "lucide-react";
 
 interface Photo {
   _id: string;
@@ -59,9 +59,12 @@ export default function PhotoLightbox({
     }
   };
 
+  const [dlState, setDlState] = useState<"idle" | "loading" | "done">("idle");
+
   const handleDownload = async () => {
     const photo = photos[currentIndex];
-    if (!photo) return;
+    if (!photo || dlState !== "idle") return;
+    setDlState("loading");
     try {
       const res = await fetch(photo.url);
       const blob = await res.blob();
@@ -76,6 +79,8 @@ export default function PhotoLightbox({
     } catch {
       window.open(photo.url, "_blank");
     }
+    setDlState("done");
+    setTimeout(() => setDlState("idle"), 2000);
   };
 
   const currentPhoto = photos[currentIndex];
@@ -124,10 +129,22 @@ export default function PhotoLightbox({
           e.stopPropagation();
           handleDownload();
         }}
-        className="absolute right-5 top-16 z-10 rounded-full bg-white/8 p-2.5 text-white/70 backdrop-blur-sm transition-all hover:bg-white/15 hover:text-white"
+        className={`absolute right-5 top-16 z-10 rounded-full p-2.5 backdrop-blur-sm transition-all ${
+          dlState === "done"
+            ? "bg-green-500/80 text-white"
+            : dlState === "loading"
+              ? "bg-white/12 text-white/80"
+              : "bg-white/8 text-white/70 hover:bg-white/15 hover:text-white"
+        }`}
         title="Download original"
       >
-        <Download className="h-5 w-5" />
+        {dlState === "loading" ? (
+          <span className="download-spinner" />
+        ) : dlState === "done" ? (
+          <Check className="h-5 w-5" />
+        ) : (
+          <Download className="h-5 w-5" />
+        )}
       </button>
 
       {/* Photo counter */}
