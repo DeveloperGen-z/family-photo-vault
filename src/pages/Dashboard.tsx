@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera,
@@ -18,6 +18,14 @@ import {
   EyeOff,
   AlertTriangle,
   Images,
+  Search,
+  Filter,
+  Download,
+  BarChart3,
+  RefreshCw,
+  Calendar,
+  FileText,
+  X,
 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -54,7 +62,14 @@ export default function Dashboard() {
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [bulkAction, setBulkAction] = useState<"approve" | "reject" | null>(null);
+
+  // Search & filter state for All Photos
+  const [photoSearch, setPhotoSearch] = useState("");
+  const [photoFilter, setPhotoFilter] = useState<"all" | "approved" | "pending" | "rejected">("all");
+  const [selectedAllPhotos, setSelectedAllPhotos] = useState<Set<string>>(new Set());
+  const [photoDetail, setPhotoDetail] = useState<any | null>(null);
 
   // Password change state
   const [currentPw, setCurrentPw] = useState("");
@@ -64,6 +79,9 @@ export default function Dashboard() {
   const [pwError, setPwError] = useState("");
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
+
+  // Logs filter
+  const [logFilter, setLogFilter] = useState<"all" | "login" | "upload" | "delete" | "approve">("all");
 
   const handleLogout = () => {
     localStorage.removeItem("family_admin");
@@ -88,6 +106,15 @@ export default function Dashboard() {
     }
   };
 
+  const toggleSelectAllPhotos = () => {
+    if (!filteredPhotos) return;
+    if (selectedAllPhotos.size === filteredPhotos.length) {
+      setSelectedAllPhotos(new Set());
+    } else {
+      setSelectedAllPhotos(new Set(filteredPhotos.map((p) => p._id)));
+    }
+  };
+
   const handleBulkAction = async (action: "approve" | "reject") => {
     const fn = action === "approve" ? approvePhoto : rejectPhoto;
     for (const id of selectedPhotos) {
@@ -100,6 +127,14 @@ export default function Dashboard() {
   const handleApproveAll = async () => {
     await approveAll({});
     setSelectedPhotos(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    for (const id of selectedAllPhotos) {
+      await deletePhoto({ photoId: id as any });
+    }
+    setSelectedAllPhotos(new Set());
+    setBulkDeleteConfirm(false);
   };
 
   const handleAdminUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,6 +175,7 @@ export default function Dashboard() {
   const handleDelete = async (photoId: string) => {
     await deletePhoto({ photoId: photoId as any });
     setDeleteConfirm(null);
+    setPhotoDetail(null);
   };
 
   const handleChangePassword = async () => {
@@ -160,6 +196,37 @@ export default function Dashboard() {
       setPwLoading(false);
     }
   };
+
+  // Filtered photos for All Photos tab
+  const filteredPhotos = useMemo(() => {
+    if (!allPhotos) return [];
+    return allPhotos.filter((p) => {
+      const matchesFilter = photoFilter === "all" || p.status === photoFilter;
+      const matchesSearch = photoSearch === "" ||
+        p.fileName.toLowerCase().includes(photoSearch.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  }, [allPhotos, photoFilter, photoSearch]);
+
+  // Filtered logs
+  const filteredLogs = useMemo(() => {
+    if (!logs) return [];
+    return [...logs].reverse().filter((log) => {
+      if (logFilter === "all") return true;
+      if (logFilter === "login") return log.action.includes("login");
+      if (logFilter === "upload") return log.action.includes("upload");
+      if (logFilter === "delete") return log.action.includes("delete");
+      if (logFilter === "approve") return log.action.includes("approve") || log.action.includes("bulk");
+      return true;
+    });
+  }, [logs, logFilter]);
+
+  // Stats by date (today's uploads)
+  const todayUploads = useMemo(() => {
+    if (!allPhotos) return 0;
+    const today = new Date().toDateString();
+    return allPhotos.filter((p) => new Date(p.uploadedAt).toDateString() === today).length;
+  }, [allPhotos]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
     {
@@ -199,19 +266,28 @@ export default function Dashboard() {
               <p className="text-[10px] text-muted-foreground sm:text-xs">Manage the family&apos;s photos</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
-          >
-            <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/")}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-muted sm:px-4 sm:py-2 sm:text-sm"
+            >
+              <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">View Site</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
+            >
+              <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Stats Cards */}
       <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6 sm:pt-6">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-5">
           {[
             {
               label: "Total Photos",
@@ -240,6 +316,13 @@ export default function Dashboard() {
               icon: <XCircle className="h-4 w-4" />,
               color: "text-red-500",
               bg: "bg-red-50",
+            },
+            {
+              label: "Today",
+              value: todayUploads,
+              icon: <Calendar className="h-4 w-4" />,
+              color: "text-blue-600",
+              bg: "bg-blue-50",
             },
           ].map((stat) => (
             <div
@@ -321,6 +404,39 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => setSelectedPhotos(new Set())}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk delete bar for All Photos */}
+      <AnimatePresence>
+        {activeTab === "photos" && selectedAllPhotos.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mx-auto max-w-6xl overflow-hidden px-4 pt-3 sm:px-6"
+          >
+            <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-2.5">
+              <span className="text-xs font-medium text-red-600 sm:text-sm">
+                {selectedAllPhotos.size} photo{selectedAllPhotos.size !== 1 ? "s" : ""} selected
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setBulkDeleteConfirm(true)}
+                  className="inline-flex items-center gap-1 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-600"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Delete All
+                </button>
+                <button
+                  onClick={() => setSelectedAllPhotos(new Set())}
                   className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
                 >
                   Clear
@@ -437,30 +553,121 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            {allPhotos && allPhotos.length > 0 ? (
+            {/* Search & Filter bar */}
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                <input
+                  type="text"
+                  placeholder="Search photos by name..."
+                  value={photoSearch}
+                  onChange={(e) => setPhotoSearch(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-card pl-9 pr-4 py-2 text-xs outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/20 sm:text-sm"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-0.5 rounded-lg border border-border/60 bg-muted/50 p-0.5">
+                  {(["all", "approved", "pending", "rejected"] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setPhotoFilter(f)}
+                      className={cn(
+                        "rounded-md px-2.5 py-1 text-[10px] font-medium transition-all sm:text-xs",
+                        photoFilter === f
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {f.charAt(0).toUpperCase() + f.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                {selectedAllPhotos.size === 0 && (
+                  <button
+                    onClick={toggleSelectAllPhotos}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted sm:text-xs"
+                  >
+                    <CheckCheck className="h-3 w-3" />
+                    Select
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {filteredPhotos.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {allPhotos.map((photo) => (
+                {filteredPhotos.map((photo) => (
                   <div
                     key={photo._id}
-                    className="group overflow-hidden rounded-xl border border-border/60 bg-card sm:rounded-2xl"
+                    className={cn(
+                      "group overflow-hidden rounded-xl border bg-card transition-all sm:rounded-2xl",
+                      selectedAllPhotos.has(photo._id)
+                        ? "border-red-400 ring-1 ring-red-200"
+                        : "border-border/60",
+                    )}
                   >
-                    <div className="relative aspect-square">
+                    <div className="relative aspect-square" onClick={() => setPhotoDetail(photo)}>
                       <img
                         src={photo.url}
                         alt={photo.fileName}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover cursor-pointer"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                        <a
-                          href={photo.url}
-                          download={photo.fileName}
-                          className="rounded-lg bg-white/90 px-3 py-1.5 text-[10px] font-semibold text-black transition-colors hover:bg-white sm:rounded-xl sm:text-xs"
-                        >
-                          Download
-                        </a>
+                      {/* Selection checkbox */}
+                      {selectedAllPhotos.size > 0 && (
                         <button
-                          onClick={() => setDeleteConfirm(photo._id)}
-                          className="rounded-lg bg-red-500 px-3 py-1.5 text-[10px] font-semibold text-white shadow-lg transition-colors hover:bg-red-600 sm:rounded-xl sm:text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAllPhotos((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(photo._id)) next.delete(photo._id);
+                              else next.add(photo._id);
+                              return next;
+                            });
+                          }}
+                          className={cn(
+                            "absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-md border-2 transition-all",
+                            selectedAllPhotos.has(photo._id)
+                              ? "border-red-500 bg-red-500 text-white"
+                              : "border-white/60 bg-black/30 text-white/0 hover:border-white/80",
+                          )}
+                        >
+                          {selectedAllPhotos.has(photo._id) && (
+                            <CheckCircle className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      )}
+                      {/* Action overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                        {photo.status !== "approved" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              approvePhoto({ photoId: photo._id });
+                            }}
+                            className="rounded-lg bg-green-500 px-2.5 py-1.5 text-[10px] font-semibold text-white transition-colors hover:bg-green-600 sm:text-xs"
+                          >
+                            <CheckCircle className="mr-0.5 inline h-3 w-3" />
+                            Approve
+                          </button>
+                        )}
+                        {photo.status !== "rejected" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              rejectPhoto({ photoId: photo._id });
+                            }}
+                            className="rounded-lg bg-amber-500 px-2.5 py-1.5 text-[10px] font-semibold text-white transition-colors hover:bg-amber-600 sm:text-xs"
+                          >
+                            <XCircle className="mr-0.5 inline h-3 w-3" />
+                            Reject
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirm(photo._id);
+                          }}
+                          className="rounded-lg bg-red-500 px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-lg transition-colors hover:bg-red-600 sm:text-xs"
                         >
                           <Trash2 className="mr-0.5 inline h-3 w-3" />
                           Delete
@@ -485,7 +692,7 @@ export default function Dashboard() {
                         {photo.fileName}
                       </p>
                       <p className="text-[9px] text-muted-foreground/70 sm:text-[10px]">
-                        by {photo.uploadedBy}
+                        by {photo.uploadedBy} • {new Date(photo.uploadedAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -494,8 +701,8 @@ export default function Dashboard() {
             ) : (
               <EmptyState
                 icon={<Camera className="h-10 w-10" />}
-                title="No photos yet"
-                description="Upload the first photo to populate the vault."
+                title="No photos found"
+                description={photoSearch || photoFilter !== "all" ? "Try adjusting your search or filter." : "Upload the first photo to populate the vault."}
               />
             )}
           </motion.div>
@@ -542,9 +749,32 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            {logs && logs.length > 0 ? (
+            {/* Log filter */}
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex gap-0.5 rounded-lg border border-border/60 bg-muted/50 p-0.5">
+                {(["all", "login", "upload", "delete", "approve"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setLogFilter(f)}
+                    className={cn(
+                      "rounded-md px-2.5 py-1 text-[10px] font-medium transition-all sm:text-xs",
+                      logFilter === f
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <span className="text-[10px] text-muted-foreground sm:text-xs">
+                {filteredLogs.length} log{filteredLogs.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+
+            {filteredLogs.length > 0 ? (
               <div className="space-y-1.5 sm:space-y-2">
-                {[...logs].reverse().map((log) => (
+                {filteredLogs.map((log) => (
                   <div
                     key={log._id}
                     className="flex items-start gap-2.5 rounded-xl border border-border/40 bg-card px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3"
@@ -681,14 +911,141 @@ export default function Dashboard() {
                 <div className="mt-4 space-y-2.5">
                   <InfoRow label="Upload Password" value="121520" />
                   <InfoRow label="Total Photos" value={String(stats?.totalPhotos ?? 0)} />
+                  <InfoRow label="Approved Photos" value={String(stats?.approvedPhotos ?? 0)} />
                   <InfoRow label="Pending Reviews" value={String(stats?.pendingPhotos ?? 0)} />
+                  <InfoRow label="Rejected Photos" value={String(stats?.rejectedPhotos ?? 0)} />
                   <InfoRow label="Total Activity Logs" value={String(stats?.totalLogs ?? 0)} />
+                  <InfoRow label="Today's Uploads" value={String(todayUploads)} />
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50">
+                    <BarChart3 className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Quick Actions</h3>
+                    <p className="text-xs text-muted-foreground">Common admin operations</p>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => navigate("/")}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                    View Site
+                  </button>
+                  <button
+                    onClick={handleApproveAll}
+                    disabled={!pendingPhotos || pendingPhotos.length === 0}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Approve All
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab("upload");
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    Upload Photos
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab("photos");
+                      setPhotoFilter("all");
+                      setPhotoSearch("");
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    <ImageIcon className="h-3.5 w-3.5" />
+                    Browse All
+                  </button>
                 </div>
               </div>
             </div>
           </motion.div>
         )}
       </div>
+
+      {/* Photo Detail Modal */}
+      <AnimatePresence>
+        {photoDetail && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            onClick={() => setPhotoDetail(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={photoDetail.url}
+                alt={photoDetail.fileName}
+                className="w-full object-cover"
+              />
+              <div className="p-4">
+                <p className="text-sm font-semibold text-foreground">{photoDetail.fileName}</p>
+                <p className="text-xs text-muted-foreground">
+                  Uploaded by {photoDetail.uploadedBy} • {new Date(photoDetail.uploadedAt).toLocaleString()}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  {photoDetail.status !== "approved" && (
+                    <button
+                      onClick={() => {
+                        approvePhoto({ photoId: photoDetail._id });
+                        setPhotoDetail(null);
+                      }}
+                      className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-green-500 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-600"
+                    >
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      Approve
+                    </button>
+                  )}
+                  {photoDetail.status !== "rejected" && (
+                    <button
+                      onClick={() => {
+                        rejectPhoto({ photoId: photoDetail._id });
+                        setPhotoDetail(null);
+                      }}
+                      className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-amber-500 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-600"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      Reject
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setDeleteConfirm(photoDetail._id);
+                      setPhotoDetail(null);
+                    }}
+                    className="inline-flex items-center justify-center gap-1 rounded-xl bg-red-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setPhotoDetail(null)}
+                    className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
@@ -728,6 +1085,51 @@ export default function Dashboard() {
                   className="flex-1 rounded-xl bg-red-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-600"
                 >
                   Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <AnimatePresence>
+        {bulkDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setBulkDeleteConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Delete {selectedAllPhotos.size} Photos</h3>
+                  <p className="text-xs text-muted-foreground">This action cannot be undone.</p>
+                </div>
+              </div>
+              <div className="mt-5 flex gap-2">
+                <button
+                  onClick={() => setBulkDeleteConfirm(false)}
+                  className="flex-1 rounded-xl border border-border bg-card px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex-1 rounded-xl bg-red-500 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-600"
+                >
+                  Delete All
                 </button>
               </div>
             </motion.div>
