@@ -59,13 +59,23 @@ export default function PhotoLightbox({
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const photo = photos[currentIndex];
     if (!photo) return;
-    const link = document.createElement("a");
-    link.href = photo.url;
-    link.download = photo.fileName;
-    link.click();
+    try {
+      const res = await fetch(photo.url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = photo.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(photo.url, "_blank");
+    }
   };
 
   const currentPhoto = photos[currentIndex];
