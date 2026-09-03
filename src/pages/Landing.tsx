@@ -251,7 +251,7 @@ export default function Landing() {
         <div className="hero-dot hero-dot-4" />
         <div className="hero-dot hero-dot-5" />
 
-        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
+        <div className="relative mx-auto max-w-5xl px-6 py-14 text-center md:py-20">
           {/* Badge */}
           <motion.div
             initial={heroVisible ? false : { opacity: 0, y: 16 }}
