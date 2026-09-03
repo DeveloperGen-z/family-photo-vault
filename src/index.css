@@ -238,7 +238,13 @@
 
 .splash-hindi-second-line {
   text-align: left;
-  padding-left: 88%;
+  padding-left: 22rem;
+}
+
+@media (max-width: 640px) {
+  .splash-hindi-second-line {
+    padding-left: 14rem;
+  }
 }
 
 .splash-divider {
