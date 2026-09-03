@@ -204,53 +204,41 @@
   }
 }
 
-/* Hindi handwritten branding on splash */
-.splash-branding {
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* ── Hindi Branding — positioned top-left ── */
+.splash-branding-top {
+  position: absolute;
+  top: 60px;
+  left: 32px;
+  z-index: 10;
 }
 
-.splash-hindi-line {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+@media (max-width: 640px) {
+  .splash-branding-top {
+    top: 40px;
+    left: 20px;
+  }
+}
+
+.splash-hindi-writing {
   font-family: var(--font-handwritten);
-  font-size: clamp(2.8rem, 8vw, 5rem);
+  font-size: clamp(2.4rem, 7vw, 4rem);
   font-weight: 700;
   line-height: 1.15;
-  background: linear-gradient(
-    to right,
-    #bf953f,
-    #fcf6ba,
-    #b38728,
-    #fbf5b7,
-    #aa771c
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  padding: 0 20px;
-  position: relative;
+  color: #ffffff;
+  text-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
 }
 
-.splash-hindi-line .absolute {
-  background: linear-gradient(
-    to right,
-    #bf953f,
-    #fcf6ba,
-    #b38728,
-    #fbf5b7,
-    #aa771c
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.splash-hindi-writing .absolute {
+  color: #ffffff;
   font-family: var(--font-handwritten);
   font-size: inherit;
   font-weight: 700;
   line-height: 1.15;
+}
+
+.splash-hindi-second-line {
+  text-align: right;
+  padding-right: 15%;
 }
 
 .splash-divider {
@@ -341,28 +329,17 @@
   animation: splashBlink 0.8s infinite;
 }
 
-.splash-watermark {
-  position: absolute;
-  bottom: 24px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.25);
-  font-weight: 300;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  opacity: 0;
-  transform: translateY(12px);
-  animation: splashSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.55s;
+/* ── Center content area ── */
+.splash-center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+  margin-top: 20px;
 }
 
-@media (max-width: 380px) {
-  .splash-watermark {
-    bottom: 16px;
-    font-size: 0.5rem;
-  }
-}
-
-/* Footer credit on splash */
+/* Footer credit on splash — bottom center */
 .splash-footer-credit {
   position: absolute;
   bottom: 28px;
@@ -379,7 +356,7 @@
 }
 
 .splash-footer-credit svg {
-  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
 }
 
 @media (max-width: 380px) {
