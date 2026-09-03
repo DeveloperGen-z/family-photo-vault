@@ -128,38 +128,44 @@ export default function Landing() {
       {/* Splash — self-managed fade, no AnimatePresence */}
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
 
-      {/* Navigation — always visible after splash */}
+      {/* Navigation — premium glass, compact */}
       <nav
-        className={`sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl transition-all duration-700 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
           heroVisible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-              <Camera className="h-5 w-5 text-primary" />
+        {/* Glass background with subtle gradient */}
+        <div className="absolute inset-0 bg-background/70 backdrop-blur-2xl border-b border-white/[0.06]" />
+
+        <div className="relative mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5 sm:px-6 sm:py-3">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10">
+              <Camera className="h-4 w-4 text-primary" />
             </div>
             <span
-              className="text-lg font-bold tracking-tight text-foreground"
+              className="hidden text-sm font-bold tracking-tight text-foreground sm:block"
               style={{ fontFamily: "var(--font-serif)" }}
             >
               Family Photo Vault
             </span>
           </div>
-          <div className="flex items-center gap-3">
+
+          {/* Actions — icon on mobile, text on desktop */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowUpload(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.97]"
+              className="group relative inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.97] sm:px-4 sm:py-2.5 sm:text-sm"
             >
-              <Upload className="h-4 w-4" />
-              Upload
+              <Upload className="h-3.5 w-4 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Upload</span>
             </button>
             <button
               onClick={() => setShowAdminLogin(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-accent/10 hover:text-foreground"
+              className="group relative inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-card/60 px-3 py-2 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-all hover:bg-card hover:text-foreground hover:border-border active:scale-[0.97] sm:px-4 sm:py-2.5 sm:text-sm"
             >
-              <Shield className="h-4 w-4" />
-              Admin
+              <Shield className="h-3.5 w-4 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Admin</span>
             </button>
           </div>
         </div>

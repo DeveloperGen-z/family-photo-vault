@@ -507,6 +507,36 @@ body::-webkit-scrollbar {
 }
 
 /* =============================================
+   Premium Navigation
+   ============================================= */
+
+nav {
+  border-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.08) 50%,
+    transparent 100%
+  ) 1;
+}
+
+@media (max-width: 640px) {
+  nav .max-w-6xl {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* Dark mode nav adjustments */
+.dark nav {
+  border-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.12) 50%,
+    transparent 100%
+  ) 1;
+}
+
+/* =============================================
    Premium Animations
    ============================================= */
 

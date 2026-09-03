@@ -177,3 +177,33 @@ export const verifyUploadAndGenerateUrl = mutation({
     return uploadUrl;
   },
 });
+
+/** Approve all pending photos at once. */
+export const approveAll = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const pending = await ctx.db
+      .query("photos")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .collect();
+
+    let count = 0;
+    for (const photo of pending) {
+      await ctx.db.patch(photo._id, {
+        status: "approved",
+        approvedAt: Date.now(),
+      });
+      count++;
+    }
+
+    if (count > 0) {
+      await ctx.db.insert("adminLogs", {
+        action: "bulk_approved",
+        details: `${count} photo${count !== 1 ? "s" : ""} approved in bulk`,
+        timestamp: Date.now(),
+      });
+    }
+
+    return count;
+  },
+});
