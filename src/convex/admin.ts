@@ -86,6 +86,32 @@ export const changeAdminPassword = mutation({
   },
 });
 
+/** Remove admin password entirely (no password required to login). */
+export const removeAdminPassword = mutation({
+  args: { currentPassword: v.string() },
+  handler: async (ctx, args) => {
+    const setting = await ctx.db
+      .query("siteSettings")
+      .withIndex("by_key", (q) => q.eq("key", "admin_password"))
+      .first();
+
+    const storedPassword = setting?.value ?? DEFAULT_ADMIN_PASSWORD;
+    if (args.currentPassword !== storedPassword) {
+      throw new Error("Current password is incorrect");
+    }
+
+    if (setting) {
+      await ctx.db.patch(setting._id, { value: "" });
+    }
+
+    await ctx.db.insert("adminLogs", {
+      action: "admin_password_removed",
+      details: "Admin password protection was removed",
+      timestamp: Date.now(),
+    });
+  },
+});
+
 /** Get admin logs. */
 export const getLogs = query({
   args: {},
@@ -95,6 +121,33 @@ export const getLogs = query({
       .withIndex("by_timestamp")
       .order("desc")
       .collect();
+  },
+});
+
+/** Clear all admin logs. */
+export const clearLogs = mutation({
+  args: { password: v.string() },
+  handler: async (ctx, args) => {
+    const setting = await ctx.db
+      .query("siteSettings")
+      .withIndex("by_key", (q) => q.eq("key", "admin_password"))
+      .first();
+
+    const storedPassword = setting?.value ?? DEFAULT_ADMIN_PASSWORD;
+    if (storedPassword && args.password !== storedPassword) {
+      throw new Error("Password required to clear logs");
+    }
+
+    const logs = await ctx.db.query("adminLogs").collect();
+    for (const log of logs) {
+      await ctx.db.delete(log._id);
+    }
+
+    await ctx.db.insert("adminLogs", {
+      action: "logs_cleared",
+      details: `${logs.length} log entries cleared`,
+      timestamp: Date.now(),
+    });
   },
 });
 
@@ -112,6 +165,59 @@ export const getStats = query({
       rejectedPhotos: photos.filter((p) => p.status === "rejected").length,
       totalLogs: logs.length,
       recentActivity: logs.slice(-10).reverse(),
+    };
+  },
+});
+
+/** Toggle maintenance mode. */
+export const setMaintenanceMode = mutation({
+  args: { enabled: v.boolean() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("siteSettings")
+      .withIndex("by_key", (q) => q.eq("key", "maintenance_mode"))
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { value: args.enabled ? "true" : "false" });
+    } else {
+      await ctx.db.insert("siteSettings", {
+        key: "maintenance_mode",
+        value: args.enabled ? "true" : "false",
+      });
+    }
+
+    await ctx.db.insert("adminLogs", {
+      action: args.enabled ? "maintenance_enabled" : "maintenance_disabled",
+      details: `Maintenance mode ${args.enabled ? "enabled" : "disabled"}`,
+      timestamp: Date.now(),
+    });
+  },
+});
+
+/** Get maintenance mode status. */
+export const getMaintenanceMode = query({
+  args: {},
+  handler: async (ctx) => {
+    const setting = await ctx.db
+      .query("siteSettings")
+      .withIndex("by_key", (q) => q.eq("key", "maintenance_mode"))
+      .first();
+    return setting?.value === "true";
+  },
+});
+
+/** Get admin password status (whether one is set). */
+export const getPasswordStatus = query({
+  args: {},
+  handler: async (ctx) => {
+    const setting = await ctx.db
+      .query("siteSettings")
+      .withIndex("by_key", (q) => q.eq("key", "admin_password"))
+      .first();
+    return {
+      hasPassword: !!setting?.value,
+      passwordLength: setting?.value?.length ?? 0,
     };
   },
 });

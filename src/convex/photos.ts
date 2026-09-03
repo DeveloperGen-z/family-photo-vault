@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-/** Generate a signed upload URL for a file to be stored in Convex. */
+/** Generate a signed upload URL for a file to be stored in Convex storage. */
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
@@ -95,6 +95,25 @@ export const listPending = query({
   },
 });
 
+/** List rejected photos (admin view). */
+export const listRejected = query({
+  args: {},
+  handler: async (ctx) => {
+    const photos = await ctx.db
+      .query("photos")
+      .withIndex("by_status", (q) => q.eq("status", "rejected"))
+      .order("desc")
+      .collect();
+
+    const results = [];
+    for (const photo of photos) {
+      const url = await ctx.storage.getUrl(photo.storageId);
+      results.push({ ...photo, url: url ?? "" });
+    }
+    return results;
+  },
+});
+
 /** Approve a pending photo. */
 export const approvePhoto = mutation({
   args: { photoId: v.id("photos") },
@@ -128,6 +147,21 @@ export const rejectPhoto = mutation({
   },
 });
 
+/** Restore a rejected photo back to pending. */
+export const restorePhoto = mutation({
+  args: { photoId: v.id("photos") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.photoId, { status: "pending" });
+
+    const photo = await ctx.db.get(args.photoId);
+    await ctx.db.insert("adminLogs", {
+      action: "photo_restored",
+      details: `Photo "${photo?.fileName ?? "unknown"}" restored to pending`,
+      timestamp: Date.now(),
+    });
+  },
+});
+
 /** Delete a photo from the database and storage. */
 export const deletePhoto = mutation({
   args: { photoId: v.id("photos") },
@@ -146,35 +180,56 @@ export const deletePhoto = mutation({
   },
 });
 
-/** Get total photo counts. */
-export const getPhotoCount = query({
-  args: {},
-  handler: async (ctx) => {
-    const all = await ctx.db.query("photos").collect();
-    return {
-      total: all.length,
-      approved: all.filter((p) => p.status === "approved").length,
-      pending: all.filter((p) => p.status === "pending").length,
-      rejected: all.filter((p) => p.status === "rejected").length,
-    };
+/** Bulk delete multiple photos. */
+export const bulkDelete = mutation({
+  args: { photoIds: v.array(v.id("photos")) },
+  handler: async (ctx, args) => {
+    let count = 0;
+    for (const photoId of args.photoIds) {
+      const photo = await ctx.db.get(photoId);
+      if (photo) {
+        await ctx.storage.delete(photo.storageId);
+        await ctx.db.delete(photoId);
+        count++;
+      }
+    }
+
+    if (count > 0) {
+      await ctx.db.insert("adminLogs", {
+        action: "bulk_deleted",
+        details: `${count} photo${count !== 1 ? "s" : ""} deleted in bulk`,
+        timestamp: Date.now(),
+      });
+    }
+
+    return count;
   },
 });
 
-/** Verify user upload password and return upload URL. */
-export const verifyUploadAndGenerateUrl = mutation({
-  args: {
-    password: v.string(),
-    fileName: v.string(),
-  },
-  handler: async (ctx, args) => {
-    // Hardcoded upload password for family members
-    const UPLOAD_PASSWORD = "121520";
-    if (args.password !== UPLOAD_PASSWORD) {
-      throw new Error("Invalid upload password");
+/** Reject all pending photos at once. */
+export const rejectAll = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const pending = await ctx.db
+      .query("photos")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .collect();
+
+    let count = 0;
+    for (const photo of pending) {
+      await ctx.db.patch(photo._id, { status: "rejected" });
+      count++;
     }
 
-    const uploadUrl = await ctx.storage.generateUploadUrl();
-    return uploadUrl;
+    if (count > 0) {
+      await ctx.db.insert("adminLogs", {
+        action: "bulk_rejected",
+        details: `${count} photo${count !== 1 ? "s" : ""} rejected in bulk`,
+        timestamp: Date.now(),
+      });
+    }
+
+    return count;
   },
 });
 
@@ -205,5 +260,36 @@ export const approveAll = mutation({
     }
 
     return count;
+  },
+});
+
+/** Get total photo counts. */
+export const getPhotoCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("photos").collect();
+    return {
+      total: all.length,
+      approved: all.filter((p) => p.status === "approved").length,
+      pending: all.filter((p) => p.status === "pending").length,
+      rejected: all.filter((p) => p.status === "rejected").length,
+    };
+  },
+});
+
+/** Verify user upload password and return upload URL. */
+export const verifyUploadAndGenerateUrl = mutation({
+  args: {
+    password: v.string(),
+    fileName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const UPLOAD_PASSWORD = "121520";
+    if (args.password !== UPLOAD_PASSWORD) {
+      throw new Error("Invalid upload password");
+    }
+
+    const uploadUrl = await ctx.storage.generateUploadUrl();
+    return uploadUrl;
   },
 });
