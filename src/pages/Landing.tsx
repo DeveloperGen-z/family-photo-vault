@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Camera, Upload, ChevronDown, Check, Shield, Search, Heart, ArrowUp } from "lucide-react";
+import { Camera, Upload, Check, Shield, Search, Heart, ArrowUp } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import SplashScreen from "@/components/SplashScreen";
@@ -257,7 +257,7 @@ export default function Landing() {
       <section className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, #0C0A08 0%, #151210 100%)" }}>
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 40%, rgba(200,169,110,0.07) 0%, transparent 55%)" }} />
         <div className="hero-dot hero-dot-1" /><div className="hero-dot hero-dot-2" /><div className="hero-dot hero-dot-3" /><div className="hero-dot hero-dot-4" /><div className="hero-dot hero-dot-5" />
-        <div className="relative mx-auto max-w-5xl px-6 py-12 text-center md:py-20">
+        <div className="relative mx-auto max-w-5xl px-6 py-10 text-center md:py-16">
           <motion.div initial={heroVisible ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-5 py-1.5 text-[10px] font-light tracking-[0.2em] text-white/40 uppercase backdrop-blur-sm sm:text-xs">
             Private Family Gallery
           </motion.div>
@@ -277,24 +277,19 @@ export default function Landing() {
               <Upload className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" /> Upload Photos
             </button>
           </motion.div>
-          <motion.div initial={heroVisible ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1.2 }} className="mt-8 sm:mt-10">
-            <a href="#gallery" className="inline-flex flex-col items-center text-white/20 transition-colors duration-300 hover:text-white/40">
-              <span className="mb-2 text-[8px] tracking-[0.25em] uppercase sm:text-[10px] sm:tracking-[0.3em]">Scroll</span>
-              <ChevronDown className="h-4 w-4 scroll-indicator sm:h-5 sm:w-5" />
-            </a>
-          </motion.div>
+
         </div>
-        <div className="absolute -bottom-1 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
+        <div className="absolute -bottom-1 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Gallery */}
-      <section id="gallery" className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-16 md:pt-8 md:pb-24">
-        <div className="mb-10 text-center md:mb-14">
+      <section id="gallery" className="mx-auto max-w-7xl px-4 sm:px-6 pt-2 pb-16 md:pt-4 md:pb-24">
+        <div className="mb-4 text-center md:mb-6">
           <h2 className="gallery-title" style={{ fontFamily: "var(--font-serif)" }}>
             {galleryTitle}{!titleDone && <span className="gallery-title-cursor" />}
           </h2>
           {photos.length > 0 && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 0.6 }} className="mt-3 text-xs text-muted-foreground sm:text-sm">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.4 }} className="mt-1.5 text-xs text-muted-foreground sm:text-sm">
               {photos.length} photo{photos.length !== 1 ? "s" : ""} in the collection
             </motion.p>
           )}
@@ -302,7 +297,7 @@ export default function Landing() {
 
         {/* Search bar */}
         {photos.length > 3 && (
-          <div className="mb-8 mx-auto max-w-md">
+          <div className="mb-5 mx-auto max-w-md">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
               <input
