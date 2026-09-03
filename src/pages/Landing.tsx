@@ -251,13 +251,13 @@ export default function Landing() {
         <div className="hero-dot hero-dot-4" />
         <div className="hero-dot hero-dot-5" />
 
-        <div className="relative mx-auto max-w-5xl px-6 py-14 text-center md:py-20">
+        <div className="relative mx-auto max-w-5xl px-6 py-8 text-center md:py-12">
           {/* Badge */}
           <motion.div
             initial={heroVisible ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-[10px] font-light tracking-widest text-white/35 uppercase backdrop-blur-sm sm:text-xs"
+            className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-[10px] font-light tracking-widest text-white/35 uppercase backdrop-blur-sm sm:text-xs"
           >
             Private Family Gallery
           </motion.div>
@@ -267,7 +267,7 @@ export default function Landing() {
             initial={heroVisible ? false : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl font-semibold leading-tight text-white md:text-6xl"
+            className="text-3xl font-semibold leading-tight text-white md:text-5xl"
             style={{ fontFamily: "var(--font-serif)" }}
           >
             Sweet Family&apos;s
@@ -293,7 +293,7 @@ export default function Landing() {
             initial={heroVisible ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto max-w-lg text-sm leading-relaxed text-white/40 font-light sm:text-base"
+            className="mx-auto max-w-lg text-xs leading-relaxed text-white/40 font-light sm:text-sm"
           >
             Browse, download, and share your family&apos;s beautiful moments — in full quality, without compression or clutter.
           </motion.p>
@@ -303,7 +303,7 @@ export default function Landing() {
             initial={heroVisible ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 flex flex-col items-center justify-center gap-2.5 sm:mt-8 sm:flex-row sm:gap-3"
+            className="mt-4 flex flex-col items-center justify-center gap-2 sm:mt-5 sm:flex-row sm:gap-2.5"
           >
             <a
               href="#gallery"
@@ -326,7 +326,7 @@ export default function Landing() {
             initial={heroVisible ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1.2 }}
-            className="mt-8 sm:mt-10"
+            className="mt-4 sm:mt-6"
           >
             <a href="#gallery" className="inline-flex flex-col items-center text-white/20 transition-colors hover:text-white/40">
               <span className="mb-1 text-[7px] tracking-[2px] uppercase sm:mb-1.5 sm:text-[9px] sm:tracking-[3px]">Scroll</span>
@@ -339,7 +339,7 @@ export default function Landing() {
       </section>
 
       {/* Gallery — shifted up */}
-      <section id="gallery" className="mx-auto max-w-7xl px-6 pt-8 pb-16 md:pt-12 md:pb-24">
+      <section id="gallery" className="mx-auto max-w-7xl px-6 pt-4 pb-16 md:pt-6 md:pb-24">
         <div className="mb-12 text-center md:mb-14">
           <h2
             className="gallery-title"
