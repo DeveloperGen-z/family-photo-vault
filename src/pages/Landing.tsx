@@ -137,27 +137,10 @@ function GalleryCard({
   onToggleFav: (id: string) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
-  const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => setVisible(true), (index % 4) * 100);
-          observer.unobserve(el);
-        }
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -30px 0px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [index]);
-
   return (
-    <div ref={ref} className={`vault-card ${visible ? "is-visible" : ""}`}>
+    <div ref={ref} className="vault-card is-visible">
       <div className="vault-card-img-wrap" onClick={onClick}>
         <img src={photo.url} alt={photo.fileName} className={`vault-card-img ${loaded ? "loaded" : ""}`} loading="lazy" onLoad={() => setLoaded(true)} />
         {/* Favorite button */}
