@@ -4,37 +4,29 @@ interface SplashScreenProps {
   onComplete: () => void;
 }
 
-const SHOW_DURATION = 2800;
-const FADE_DURATION = 600;
+const TYPING_SPEED = 35;
+const SHOW_DURATION = 2600;
+const FADE_DURATION = 700;
 
-function AnimatedTitle() {
+function AnimatedTitle({ text }: { text: string }) {
   return (
-    <div className="splash-branding" style={{ textAlign: "center" }}>
-      {/* बड़ोलिया — top line */}
-      <div className="splash-hindi-line" style={{ justifyContent: "flex-end" }}>
-        {"बड़ोलिया".split("").map((char, i) => (
-          <span
-            key={`top-${i}`}
-            className="splash-char"
-            style={{ animationDelay: `${0.1 + i * 0.05}s` }}
-          >
-            {char}
-          </span>
-        ))}
-      </div>
-      {/* परिवार — bottom line, right-aligned to end of या */}
-      <div className="splash-hindi-line" style={{ justifyContent: "flex-end" }}>
-        {"परिवार".split("").map((char, i) => (
-          <span
-            key={`bot-${i}`}
-            className="splash-char"
-            style={{ animationDelay: `${0.5 + i * 0.05}s` }}
-          >
-            {char}
-          </span>
-        ))}
-      </div>
-    </div>
+    <h1
+      className="splash-title"
+      style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}
+    >
+      {text.split("").map((char, i) => (
+        <span
+          key={i}
+          className="splash-char"
+          style={{
+            animationDelay: `${0.15 + i * 0.035}s`,
+            minWidth: char === " " ? "0.3em" : undefined,
+          }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </span>
+      ))}
+    </h1>
   );
 }
 
@@ -42,7 +34,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
   const [fading, setFading] = useState(false);
   const [typedText, setTypedText] = useState("");
   const completedRef = useRef(false);
-  const fullText = "Bringing your moments to life\u2026";
+  const fullText = "Loading your memories\u2026";
 
   // Typewriter effect
   useEffect(() => {
@@ -54,7 +46,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       } else {
         clearInterval(timer);
       }
-    }, 40);
+    }, TYPING_SPEED);
     return () => clearInterval(timer);
   }, []);
 
@@ -74,11 +66,11 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     return () => clearTimeout(fadeTimer);
   }, [doComplete]);
 
-  // Safety net: if anything goes wrong, force-complete after 6s
+  // Safety net
   useEffect(() => {
     const safetyTimer = setTimeout(() => {
       doComplete();
-    }, 6000);
+    }, 5000);
     return () => clearTimeout(safetyTimer);
   }, [doComplete]);
 
@@ -103,14 +95,17 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
         }}
       />
 
-      {/* Hindi Branding — character-by-character reveal */}
-      <AnimatedTitle />
+      {/* Title — character-by-character reveal */}
+      <AnimatedTitle text="Family Photo Vault" />
 
       {/* Divider */}
       <div className="splash-divider" />
 
       {/* Subtitle */}
-      <p className="splash-subtitle">Sweet Family&apos;s Photos</p>
+      <p className="splash-subtitle">Private Family Gallery</p>
+
+      {/* Tagline */}
+      <p className="splash-tagline">Preserving memories, together</p>
 
       {/* Typewriter */}
       <div className="splash-typewriter">
@@ -119,7 +114,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       </div>
 
       {/* Watermark */}
-      <div className="splash-watermark">बड़ोलिया परिवार</div>
+      <div className="splash-watermark">Family Photo Vault</div>
     </div>
   );
 }
