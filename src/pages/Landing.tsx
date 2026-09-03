@@ -114,7 +114,7 @@ function GalleryCard({
 /* ─── Dotted Admin Circle ─── */
 function AdminBadge() {
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] border-dashed border-current text-[8px] font-bold tracking-wider uppercase text-muted-foreground transition-colors group-hover:text-foreground sm:h-9 sm:w-9 sm:text-[9px]">
+    <span className="inline-flex items-center justify-center rounded-full border border-dashed border-current px-3 py-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground transition-colors group-hover:text-foreground sm:text-xs">
       Admin
     </span>
   );
@@ -184,7 +184,7 @@ export default function Landing() {
             </button>
             <button
               onClick={() => setShowAdminLogin(true)}
-              className="group inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-card/60 px-2 py-2 text-xs font-medium text-muted-foreground backdrop-blur-sm transition-all hover:bg-card hover:text-foreground hover:border-border active:scale-[0.97] sm:px-3 sm:py-2.5 sm:text-sm"
+              className="group inline-flex items-center justify-center backdrop-blur-sm transition-all active:scale-[0.97]"
             >
               <AdminBadge />
             </button>
