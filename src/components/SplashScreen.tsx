@@ -29,21 +29,21 @@ export default function SplashScreen({ onComplete }: Props) {
           else {
             clearInterval(iv2);
             setShowTitle(true);
-            setTimeout(() => setShowCenter(true), 300);
+            setTimeout(() => setShowCenter(true), 250);
             setTimeout(() => {
               setFadeOut(true);
-              setTimeout(() => { if (!completedRef.current) { completedRef.current = true; onComplete(); } }, 600);
-            }, 1800);
+              setTimeout(() => { if (!completedRef.current) { completedRef.current = true; onComplete(); } }, 500);
+            }, 1500);
           }
-        }, 80);
+        }, 70);
       }
-    }, 100);
+    }, 90);
     return () => { clearInterval(iv); };
   }, [onComplete]);
 
   // Safety net — force complete
   useEffect(() => {
-    const t = setTimeout(() => { if (!completedRef.current) { completedRef.current = true; onComplete(); } }, 4000);
+    const t = setTimeout(() => { if (!completedRef.current) { completedRef.current = true; onComplete(); } }, 3500);
     return () => clearTimeout(t);
   }, [onComplete]);
 

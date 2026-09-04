@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Camera, Upload, Check, Shield, Search, Heart, ArrowUp } from "lucide-react";
+import { Camera, Upload, Check, Shield, Search, Heart, ArrowUp, Download, Loader2 } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import SplashScreen from "@/components/SplashScreen";
@@ -41,6 +41,36 @@ async function directDownload(
     window.open(url, "_blank");
   }
   onDone?.();
+}
+
+/* ─── Download all helper ─── */
+async function downloadAllPhotos(
+  photos: { url: string; fileName: string }[],
+  onProgress: (current: number, total: number) => void,
+  onDone: () => void,
+) {
+  for (let i = 0; i < photos.length; i++) {
+    onProgress(i + 1, photos.length);
+    try {
+      const res = await fetch(photos[i].url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = photos[i].fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(photos[i].url, "_blank");
+    }
+    // Small delay between downloads to prevent browser blocking
+    if (i < photos.length - 1) {
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  }
+  onDone();
 }
 
 /* ─── Typewriter hook ─── */
@@ -139,7 +169,7 @@ function GalleryCard({
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div className="vault-card" style={{ animationDelay: `${Math.min(index * 0.08, 0.4)}s` }}>
+    <div className="vault-card" style={{ animationDelay: `${Math.min(index * 0.08, 0.5)}s` }}>
       <div className="vault-card-img-wrap" onClick={onClick}>
         <img src={photo.url} alt={photo.fileName} className={`vault-card-img ${loaded ? "loaded" : ""}`} loading="lazy" onLoad={() => setLoaded(true)} />
         {/* Favorite button */}
@@ -183,11 +213,23 @@ export default function Landing() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
 
+  /* ─── Download All state ─── */
+  const [dlAllState, setDlAllState] = useState<"idle" | "loading" | "done">("idle");
+  const [dlAllProgress, setDlAllProgress] = useState({ current: 0, total: 0 });
+
   const approvedPhotos = useQuery(api.photos.listApproved);
   const photos = approvedPhotos ?? [];
   const { favorites, toggle: toggleFav } = useFavorites();
 
-  const { displayed: galleryTitle, done: titleDone } = useTypewriter("Family Memories", 55, galleryReady);
+  /* ─── Gallery title brush-write state ─── */
+  const [titleRevealed, setTitleRevealed] = useState(false);
+
+  useEffect(() => {
+    if (galleryReady) {
+      const t = setTimeout(() => setTitleRevealed(true), 300);
+      return () => clearTimeout(t);
+    }
+  }, [galleryReady]);
 
   // Filter photos by search
   const filteredPhotos = useMemo(() => {
@@ -223,6 +265,21 @@ export default function Landing() {
     setHeroVisible(true);
     setTimeout(() => setDividerExpanded(true), 400);
   }, []);
+
+  /* ─── Download All handler ─── */
+  const handleDownloadAll = async () => {
+    if (dlAllState !== "idle" || photos.length === 0) return;
+    setDlAllState("loading");
+    setDlAllProgress({ current: 0, total: photos.length });
+    await downloadAllPhotos(
+      photos.map((p) => ({ url: p.url, fileName: p.fileName })),
+      (current, total) => setDlAllProgress({ current, total }),
+      () => {
+        setDlAllState("done");
+        setTimeout(() => setDlAllState("idle"), 3000);
+      },
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -269,7 +326,7 @@ export default function Landing() {
           <motion.p initial={heroVisible ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }} className="mx-auto max-w-lg text-xs leading-relaxed text-white/45 font-light sm:text-sm">
             Browse, download, and share your family&apos;s beautiful moments — in full quality, without compression or clutter.
           </motion.p>
-          <motion.div initial={heroVisible ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.65, ease: [0.16, 1, 0.3, 1] }} className="mt-6 flex flex-col items-center justify-center gap-3 sm:mt-8 sm:flex-row sm:gap-3">
+          <motion.div initial={heroVisible ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.65, ease: [0.16, 1, 0.3, 1] }} className="mt-6 flex flex-col items-center justify-center gap-2.5 sm:mt-8 sm:flex-row sm:gap-3">
             <a href="#gallery" className="group inline-flex items-center gap-2.5 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-7 py-3 text-xs font-medium text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.08] hover:border-white/[0.15] hover:shadow-lg hover:shadow-white/[0.03] active:scale-[0.97] sm:px-8 sm:py-3.5 sm:text-sm">
               <Camera className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" /> View Gallery
             </a>
@@ -277,7 +334,6 @@ export default function Landing() {
               <Upload className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" /> Upload Photos
             </button>
           </motion.div>
-
         </div>
         <div className="absolute -bottom-1 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent" />
       </section>
@@ -285,8 +341,16 @@ export default function Landing() {
       {/* Gallery */}
       <section id="gallery" className="mx-auto max-w-7xl px-4 sm:px-6 pt-2 pb-16 md:pt-4 md:pb-24">
         <div className="mb-4 text-center md:mb-6">
+          {/* ── Brush-Write Gallery Title ── */}
           <h2 className="gallery-title" style={{ fontFamily: "var(--font-serif)" }}>
-            {galleryTitle}{!titleDone && <span className="gallery-title-cursor" />}
+            {titleRevealed ? (
+              <span className="brush-write">
+                <span className="brush-text">Family Memories</span>
+                <span className="brush-underline" />
+              </span>
+            ) : (
+              <span style={{ opacity: 0 }}>Family Memories</span>
+            )}
           </h2>
           {photos.length > 0 && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.4 }} className="mt-1.5 text-xs text-muted-foreground sm:text-sm">
@@ -295,26 +359,62 @@ export default function Landing() {
           )}
         </div>
 
-        {/* Search bar */}
-        {photos.length > 3 && (
-          <div className="mb-5 mx-auto max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
-              <input
-                type="text"
-                placeholder="Search photos by name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-2xl border border-border bg-card pl-10 pr-4 py-3 text-sm outline-none transition-all duration-300 focus:border-ring/30 focus:ring-2 focus:ring-ring/10 placeholder:text-muted-foreground/30"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors duration-200">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                </button>
+        {/* Download All + Search row */}
+        <div className="mb-5 mx-auto max-w-2xl flex flex-col sm:flex-row items-center gap-3">
+          {/* Download All button */}
+          {photos.length > 1 && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              onClick={handleDownloadAll}
+              className={`download-all-btn ${dlAllState === "loading" ? "is-loading" : ""} ${dlAllState === "done" ? "is-done" : ""}`}
+            >
+              {dlAllState === "idle" && (
+                <>
+                  <Download className="h-4 w-4" />
+                  Download All ({photos.length} photos)
+                </>
               )}
+              {dlAllState === "loading" && (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Downloading {dlAllProgress.current}/{dlAllProgress.total}…
+                </>
+              )}
+              {dlAllState === "done" && (
+                <>
+                  <Check className="h-4 w-4" />
+                  All Downloaded!
+                </>
+              )}
+              {dlAllState === "loading" && (
+                <div className="download-all-progress" style={{ width: `${(dlAllProgress.current / dlAllProgress.total) * 100}%` }} />
+              )}
+            </motion.button>
+          )}
+
+          {/* Search bar */}
+          {photos.length > 3 && (
+            <div className="flex-1 w-full sm:w-auto">
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
+                <input
+                  type="text"
+                  placeholder="Search photos…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-2xl border border-border bg-card pl-10 pr-4 py-3 text-sm outline-none transition-all duration-300 focus:border-ring/30 focus:ring-2 focus:ring-ring/10 placeholder:text-muted-foreground/30"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors duration-200">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {filteredPhotos.length > 0 ? (
           <div className="gallery-grid">

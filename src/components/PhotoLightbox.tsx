@@ -29,6 +29,7 @@ export default function PhotoLightbox({ photos, initialIndex, onClose, visitorId
   const [commentText, setCommentText] = useState("");
   const [commentAuthor, setCommentAuthor] = useState(() => localStorage.getItem("vault_comment_name") || "");
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const slideshowRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentPhoto = photos[currentIndex];
@@ -93,11 +94,18 @@ export default function PhotoLightbox({ photos, initialIndex, onClose, visitorId
     return () => { if (slideshowRef.current) clearInterval(slideshowRef.current); };
   }, [slideshow, goNext]);
 
-  // Touch
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  // Touch — improved with vertical swipe detection to avoid conflicts
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
   const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) { if (diff > 0) goNext(); else goPrev(); }
+    const diffX = touchStartX.current - e.changedTouches[0].clientX;
+    const diffY = touchStartY.current - e.changedTouches[0].clientY;
+    // Only swipe if horizontal movement dominates vertical
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+      if (diffX > 0) goNext(); else goPrev();
+    }
   };
 
   // Download
@@ -147,77 +155,150 @@ export default function PhotoLightbox({ photos, initialIndex, onClose, visitorId
   if (!currentPhoto) return null;
 
   const variants = {
-    enter: (d: number) => ({ x: d > 0 ? 60 : -60, opacity: 0, scale: 0.97 }),
+    enter: (d: number) => ({ x: d > 0 ? 80 : -80, opacity: 0, scale: 0.96 }),
     center: { x: 0, opacity: 1, scale: 1 },
-    exit: (d: number) => ({ x: d > 0 ? -60 : 60, opacity: 0, scale: 0.97 }),
+    exit: (d: number) => ({ x: d > 0 ? -80 : 80, opacity: 0, scale: 0.96 }),
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: "rgba(12, 10, 8, 0.94)", backdropFilter: "blur(20px)" }} onClick={onClose} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+      className="fixed inset-0 z-[60] flex items-center justify-center"
+      style={{ background: "rgba(12, 10, 8, 0.94)", backdropFilter: "blur(24px)" }}
+      onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Close */}
-      <button onClick={onClose} className="absolute right-4 top-4 z-20 rounded-2xl bg-white/[0.08] p-2.5 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white sm:right-5 sm:top-5"><X className="h-5 w-5" /></button>
+      <button onClick={onClose} className="absolute right-3 top-3 z-20 rounded-2xl bg-white/[0.08] p-2.5 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white active:scale-90 sm:right-5 sm:top-5">
+        <X className="h-5 w-5" />
+      </button>
 
       {/* Counter */}
-      <div className="absolute left-4 top-4 z-20 rounded-2xl bg-white/[0.08] px-4 py-1.5 text-sm font-light text-white/60 backdrop-blur-sm sm:left-5 sm:top-5">{currentIndex + 1} / {photos.length}</div>
+      <div className="absolute left-3 top-3 z-20 rounded-2xl bg-white/[0.08] px-4 py-1.5 text-sm font-light text-white/60 backdrop-blur-sm sm:left-5 sm:top-5">
+        {currentIndex + 1} / {photos.length}
+      </div>
 
       {/* Right actions */}
-      <div className="absolute right-4 top-16 z-20 flex flex-col gap-2 sm:right-5 sm:top-16">
+      <div className="absolute right-3 top-14 z-20 flex flex-col gap-2 sm:right-5 sm:top-16">
         {/* Download */}
-        <button onClick={(e) => { e.stopPropagation(); handleDownload(); }} className={`relative rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 ${dlState === "done" ? "bg-[#2D7A4F]/80 text-white" : dlState === "loading" ? "bg-white/12 text-white/70" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`} title="Download">
+        <button
+          onClick={(e) => { e.stopPropagation(); handleDownload(); }}
+          className={`relative rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 active:scale-90 ${dlState === "done" ? "bg-[#2D7A4F]/80 text-white" : dlState === "loading" ? "bg-white/12 text-white/70" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`}
+          title="Download"
+        >
           {dlState === "loading" ? <span className="download-spinner" /> : dlState === "done" ? <Check className="h-5 w-5" /> : <Download className="h-5 w-5" />}
         </button>
         {/* Heart */}
-        <button onClick={(e) => { e.stopPropagation(); handleLike(); }} className={`relative rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 ${likeDisplay.liked ? "bg-[#DC4A3F]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`} title="Like">
-          <Heart className={`h-5 w-5 ${likeDisplay.liked ? "fill-current" : ""}`} />
-          {likeDisplay.count > 0 && <span className="absolute -bottom-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#DC4A3F] px-1 text-[9px] font-bold text-white">{likeDisplay.count}</span>}
+        <button
+          onClick={(e) => { e.stopPropagation(); handleLike(); }}
+          className={`relative rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 active:scale-90 ${likeDisplay.liked ? "bg-[#DC4A3F]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`}
+          title="Like"
+        >
+          <Heart className={`h-5 w-5 transition-transform duration-300 ${likeDisplay.liked ? "fill-current scale-110" : ""}`} />
+          {likeDisplay.count > 0 && (
+            <span className="absolute -bottom-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#DC4A3F] px-1 text-[9px] font-bold text-white">
+              {likeDisplay.count}
+            </span>
+          )}
         </button>
         {/* Comments */}
-        <button onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); setShowInfo(false); }} className={`rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 ${showComments ? "bg-[#C8A96E]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`} title="Comments">
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); setShowInfo(false); }}
+          className={`rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 active:scale-90 ${showComments ? "bg-[#C8A96E]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`}
+          title="Comments"
+        >
           <MessageCircle className="h-5 w-5" />
         </button>
         {/* Share */}
-        <button onClick={(e) => { e.stopPropagation(); handleShare(); }} className="rounded-2xl bg-white/[0.08] p-2.5 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white" title="Share">
+        <button
+          onClick={(e) => { e.stopPropagation(); handleShare(); }}
+          className="rounded-2xl bg-white/[0.08] p-2.5 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white active:scale-90"
+          title="Share"
+        >
           <Share2 className="h-5 w-5" />
         </button>
         {/* Info */}
-        <button onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); setShowComments(false); }} className={`rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 ${showInfo ? "bg-[#C8A96E]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`} title="Info">
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); setShowComments(false); }}
+          className={`rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 active:scale-90 ${showInfo ? "bg-[#C8A96E]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`}
+          title="Info"
+        >
           <Info className="h-5 w-5" />
         </button>
         {/* Slideshow */}
-        <button onClick={(e) => { e.stopPropagation(); setSlideshow(!slideshow); }} className={`rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 ${slideshow ? "bg-[#C8A96E]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`} title={slideshow ? "Pause slideshow" : "Start slideshow"}>
+        <button
+          onClick={(e) => { e.stopPropagation(); setSlideshow(!slideshow); }}
+          className={`rounded-2xl p-2.5 backdrop-blur-sm transition-all duration-300 active:scale-90 ${slideshow ? "bg-[#C8A96E]/80 text-white" : "bg-white/[0.08] text-white/60 hover:bg-white/[0.15] hover:text-white"}`}
+          title={slideshow ? "Pause slideshow" : "Start slideshow"}
+        >
           {slideshow ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
         </button>
       </div>
 
       {/* Progress dots */}
       {photos.length <= 20 && (
-        <div className="absolute bottom-16 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
+        <div className="absolute bottom-14 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
           {photos.map((_, i) => (
-            <button key={i} onClick={(e) => { e.stopPropagation(); setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); setOptimisticLike(null); }} className={`rounded-full transition-all duration-300 ${i === currentIndex ? "h-2 w-2 bg-white" : "h-1.5 w-1.5 bg-white/20 hover:bg-white/35"}`} />
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); setDirection(i > currentIndex ? 1 : -1); setCurrentIndex(i); setOptimisticLike(null); }}
+              className={`rounded-full transition-all duration-300 ${i === currentIndex ? "h-2 w-2 bg-white" : "h-1.5 w-1.5 bg-white/20 hover:bg-white/35"}`}
+            />
           ))}
         </div>
       )}
 
       {/* Nav arrows */}
-      {photos.length > 1 && (<>
-        <button onClick={(e) => { e.stopPropagation(); goPrev(); }} className="absolute left-3 z-20 rounded-2xl bg-white/[0.08] p-3 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white sm:left-4"><ChevronLeft className="h-6 w-6" /></button>
-        <button onClick={(e) => { e.stopPropagation(); goNext(); }} className="absolute right-3 z-20 rounded-2xl bg-white/[0.08] p-3 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white sm:right-4"><ChevronRight className="h-6 w-6" /></button>
-      </>)}
+      {photos.length > 1 && (
+        <>
+          <button onClick={(e) => { e.stopPropagation(); goPrev(); }} className="absolute left-2 z-20 rounded-2xl bg-white/[0.08] p-3 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white active:scale-90 sm:left-4">
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); goNext(); }} className="absolute right-2 z-20 rounded-2xl bg-white/[0.08] p-3 text-white/60 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.15] hover:text-white active:scale-90 sm:right-4">
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </>
+      )}
 
       {/* Image */}
       <div className="flex max-h-[85vh] max-w-[85vw] items-center justify-center sm:max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
-          <motion.img key={currentPhoto._id} custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }} src={currentPhoto.url} alt={currentPhoto.fileName} className="max-h-[85vh] max-w-[85vw] rounded-xl object-contain shadow-2xl sm:max-w-[90vw]" draggable={false} />
+          <motion.img
+            key={currentPhoto._id}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            src={currentPhoto.url}
+            alt={currentPhoto.fileName}
+            className="max-h-[85vh] max-w-[85vw] rounded-xl object-contain shadow-2xl sm:max-w-[90vw]"
+            draggable={false}
+          />
         </AnimatePresence>
       </div>
 
       {/* File name */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-2xl bg-white/[0.08] px-5 py-1.5 text-xs font-light tracking-wide text-white/45 backdrop-blur-sm">{currentPhoto.fileName}</div>
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-2xl bg-white/[0.08] px-5 py-1.5 text-xs font-light tracking-wide text-white/45 backdrop-blur-sm max-w-[80vw] truncate">
+        {currentPhoto.fileName}
+      </div>
 
       {/* Info Panel */}
       <AnimatePresence>
         {showInfo && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onClick={(e) => e.stopPropagation()} className="absolute right-4 top-28 z-30 w-64 rounded-2xl border border-white/[0.08] bg-black/70 p-4 backdrop-blur-xl sm:right-5">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.25 }}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-4 top-28 z-30 w-64 rounded-2xl border border-white/[0.08] bg-black/70 p-4 backdrop-blur-xl sm:right-5"
+          >
             <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/40">Photo Details</h4>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between"><span className="text-white/35">Name</span><span className="text-white/70 truncate ml-2 max-w-[140px]">{currentPhoto.fileName}</span></div>
@@ -233,7 +314,14 @@ export default function PhotoLightbox({ photos, initialIndex, onClose, visitorId
       {/* Comments Panel */}
       <AnimatePresence>
         {showComments && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onClick={(e) => e.stopPropagation()} className="absolute right-4 top-28 z-30 flex w-72 flex-col rounded-2xl border border-white/[0.08] bg-black/70 backdrop-blur-xl sm:right-5 sm:h-[70vh] max-h-[60vh]">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.25 }}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-4 top-28 z-30 flex w-72 flex-col rounded-2xl border border-white/[0.08] bg-black/70 backdrop-blur-xl sm:right-5 sm:h-[70vh] max-h-[60vh]"
+          >
             <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40">Comments ({comments?.length ?? 0})</h4>
               <button onClick={() => setShowComments(false)} className="text-white/35 hover:text-white transition-colors"><X className="h-4 w-4" /></button>
@@ -260,7 +348,7 @@ export default function PhotoLightbox({ photos, initialIndex, onClose, visitorId
               )}
               <div className="flex gap-2">
                 <input type="text" placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleComment()} className="flex-1 rounded-xl bg-white/[0.06] px-3 py-2 text-xs text-white outline-none placeholder:text-white/25 focus:bg-white/[0.1] transition-colors" />
-                <button onClick={handleComment} disabled={!commentText.trim() || !commentAuthor.trim()} className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#C8A96E] text-[#0C0A08] transition-all duration-300 hover:bg-[#B8993E] disabled:opacity-30"><Send className="h-3.5 w-3.5" /></button>
+                <button onClick={handleComment} disabled={!commentText.trim() || !commentAuthor.trim()} className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#C8A96E] text-[#0C0A08] transition-all duration-300 hover:bg-[#B8993E] disabled:opacity-30 active:scale-90"><Send className="h-3.5 w-3.5" /></button>
               </div>
             </div>
           </motion.div>

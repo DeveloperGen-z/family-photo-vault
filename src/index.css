@@ -43,7 +43,7 @@
 }
 
 /* =============================================
-   Family Photo Vault — Premium Warm Theme
+   Family Photo Vault — Premium Warm Theme v2
    ============================================= */
 
 :root {
@@ -370,7 +370,7 @@
 }
 
 /* =============================================
-   Gallery Cards — Premium Warm Style
+   Gallery Cards — Premium Warm Style v2
    ============================================= */
 
 .gallery-grid {
@@ -409,6 +409,18 @@
   display: flex;
   flex-direction: column;
   opacity: 1;
+  animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (hover: hover) {
@@ -493,7 +505,7 @@
 }
 
 /* =============================================
-   Download Button — Premium
+   Download Button — Premium v2
    ============================================= */
 
 .vault-download-btn {
@@ -515,6 +527,29 @@
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   text-decoration: none;
   min-height: 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer on hover */
+.vault-download-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(200, 169, 110, 0.15),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.vault-download-btn:hover::after {
+  left: 100%;
 }
 
 @media (max-width: 640px) {
@@ -582,7 +617,7 @@
 }
 
 /* =============================================
-   Gallery Header — Typewriter title
+   Gallery Header — Brush-Write Title
    ============================================= */
 
 .gallery-title {
@@ -595,6 +630,52 @@
   text-align: center;
   min-height: 50px;
   letter-spacing: -0.02em;
+  position: relative;
+  display: inline-block;
+}
+
+/* Brush-stroke reveal animation */
+.gallery-title.brush-write {
+  position: relative;
+  display: inline-block;
+}
+
+.gallery-title.brush-write .brush-text {
+  display: inline-block;
+  clip-path: inset(0 100% 0 0);
+  animation: brushReveal 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes brushReveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    filter: blur(2px);
+  }
+  20% {
+    filter: blur(0.5px);
+  }
+  100% {
+    clip-path: inset(0 0% 0 0);
+    filter: blur(0);
+  }
+}
+
+/* Brush stroke underline that appears after text is written */
+.gallery-title .brush-underline {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #C8A96E, rgba(200, 169, 110, 0.3));
+  border-radius: 1px;
+  width: 0;
+  animation: brushUnderline 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 1.6s;
+}
+
+@keyframes brushUnderline {
+  to {
+    width: 100%;
+  }
 }
 
 .gallery-title-cursor {
@@ -605,6 +686,96 @@
   margin-left: 3px;
   vertical-align: text-bottom;
   animation: splashBlink 0.8s infinite;
+}
+
+/* =============================================
+   Download All Button — Premium
+   ============================================= */
+
+.download-all-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #1A1714 0%, #2E2820 100%);
+  color: #FAF8F5;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 16px;
+  border: none;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 50px;
+}
+
+.download-all-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(200, 169, 110, 0.1),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.download-all-btn:hover::before {
+  left: 100%;
+}
+
+.download-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 32px rgba(26, 23, 20, 0.2),
+    0 4px 12px rgba(200, 169, 110, 0.1);
+}
+
+.download-all-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.download-all-btn.is-loading {
+  pointer-events: none;
+  background: #3D3530;
+}
+
+.download-all-btn.is-done {
+  background: linear-gradient(135deg, #2D7A4F 0%, #1F5C38 100%);
+  box-shadow: 0 4px 16px rgba(45, 122, 79, 0.25);
+}
+
+.download-all-btn.is-done::before {
+  animation: none;
+}
+
+/* Progress overlay for Download All */
+.download-all-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #C8A96E, #F0DCA0);
+  border-radius: 0 0 16px 16px;
+  transition: width 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .download-all-btn {
+    padding: 12px 20px;
+    font-size: 0.7rem;
+    min-height: 44px;
+    width: 100%;
+  }
 }
 
 /* =============================================
