@@ -146,13 +146,13 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
 
 .splash-hindi-writing {
   font-family: var(--font-handwritten);
-  font-size: clamp(2.4rem, 7vw, 4rem);
+  font-size: clamp(2.2rem, 7vw, 4rem);
   font-weight: 700; line-height: 1.15;
   color: #ffffff; text-shadow: 0 0 40px rgba(0, 113, 227, 0.1);
+  max-width: calc(100vw - 40px);
 }
 .splash-hindi-writing .absolute { color: #ffffff; font-family: var(--font-handwritten); font-size: inherit; font-weight: 700; line-height: 1.15; }
-.splash-hindi-second-line { text-align: left; padding-left: 14rem; }
-@media (max-width: 640px) { .splash-hindi-second-line { padding-left: 9rem; } }
+.splash-hindi-second-line { text-align: left; padding-left: clamp(2.5rem, 24vw, 14rem); }
 
 .splash-divider {
   width: 0; height: 1px;
@@ -198,7 +198,8 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
   padding: 0 24px; margin-top: 20px;
 }
 .splash-footer-credit {
-  position: absolute; bottom: 28px;
+  position: absolute; bottom: 28px; left: 0; right: 0;
+  justify-content: center;
   display: flex; align-items: center; gap: 8px;
   font-size: 0.65rem; color: rgba(255,255,255,0.15);
   letter-spacing: 1.5px;
