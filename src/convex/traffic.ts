@@ -10,6 +10,9 @@ export const recordVisitor = mutation({
     country: v.optional(v.string()),
     city: v.optional(v.string()),
     device: v.optional(v.string()),
+    browser: v.optional(v.string()),
+    os: v.optional(v.string()),
+    screen: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await ctx.db.insert("visitors", {
@@ -19,6 +22,9 @@ export const recordVisitor = mutation({
       country: args.country,
       city: args.city,
       device: args.device,
+      browser: args.browser,
+      os: args.os,
+      screen: args.screen,
       timestamp: Date.now(),
     });
   },
@@ -242,6 +248,68 @@ export const getDailyTraffic = query({
       count,
       label: new Date(date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
     }));
+  },
+});
+
+/** Get all blocked IPs (for client-side enforcement). */
+export const getBlockedIps = query({
+  args: {},
+  handler: async (ctx) => {
+    const blocks = await ctx.db.query("blocks").collect();
+    return blocks.map((b) => b.ip);
+  },
+});
+
+/** Get blocked list with details. */
+export const getBlocks = query({
+  args: {},
+  handler: async (ctx) => {
+    const blocks = await ctx.db.query("blocks").collect();
+    return blocks.sort((a, b) => b.timestamp - a.timestamp);
+  },
+});
+
+/** Block a device/IP. */
+export const blockIp = mutation({
+  args: { ip: v.string(), reason: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (!args.ip || args.ip === "unknown") return;
+    const existing = await ctx.db
+      .query("blocks")
+      .withIndex("by_ip", (q) => q.eq("ip", args.ip))
+      .first();
+    if (!existing) {
+      await ctx.db.insert("blocks", {
+        ip: args.ip,
+        reason: args.reason,
+        timestamp: Date.now(),
+      });
+    }
+    await ctx.db.insert("adminLogs", {
+      action: "ip_blocked",
+      details: `Blocked device/IP: ${args.ip}${args.reason ? ` (${args.reason})` : ""}`,
+      timestamp: Date.now(),
+    });
+  },
+});
+
+/** Unblock a device/IP. */
+export const unblockIp = mutation({
+  args: { ip: v.string() },
+  handler: async (ctx, args) => {
+    const blocks = await ctx.db
+      .query("blocks")
+      .withIndex("by_ip", (q) => q.eq("ip", args.ip))
+      .collect();
+    for (const b of blocks) {
+      await ctx.db.delete(b._id);
+    }
+    await ctx.db.insert("adminLogs", {
+      action: "ip_unblocked",
+      details: `Unblocked device/IP: ${args.ip}`,
+      timestamp: Date.now(),
+    });
+    return blocks.length;
   },
 });
 

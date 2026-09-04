@@ -68,7 +68,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
             onDrop={(e) => { e.preventDefault(); setIsDragging(false); addFiles(e.dataTransfer.files); }}
             onClick={() => fileInputRef.current?.click()}
             className={`upload-dropzone ${isDragging ? "dragging" : ""}`}>
-            <Image className="h-8 w-8" style={{ margin: "0 auto", color: "rgba(255,255,255,0.15)" }} />
+            <Image className="h-8 w-8" style={{ margin: "0 auto", color: "var(--vault-icon-dim)" }} />
             <p>Drag & drop photos</p>
             <small>or click to browse — JPG, PNG, WebP</small>
             <input ref={fileInputRef} type="file" multiple accept="image/*" style={{ display: "none" }} onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />

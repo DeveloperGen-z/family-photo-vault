@@ -66,9 +66,19 @@ const schema = defineSchema(
       country: v.optional(v.string()),
       city: v.optional(v.string()),
       device: v.optional(v.string()), // "mobile" | "desktop" | "tablet"
+      browser: v.optional(v.string()), // e.g. "Chrome 120"
+      os: v.optional(v.string()), // e.g. "Android 14"
+      screen: v.optional(v.string()), // e.g. "390x844"
       timestamp: v.number(),
     }).index("by_timestamp", ["timestamp"])
       .index("by_ip", ["ip"]),
+
+    // Blocked devices/IPs (admin can block a person by IP)
+    blocks: defineTable({
+      ip: v.string(),
+      reason: v.optional(v.string()),
+      timestamp: v.number(),
+    }).index("by_ip", ["ip"]),
 
     // Photo view/download tracking
     photoViews: defineTable({

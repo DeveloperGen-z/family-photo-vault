@@ -1,17 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, LogOut, CheckCircle, XCircle, Trash2, Upload, Clock, Image as ImageIcon, Activity, Shield, ChevronLeft, CheckCheck, Key, Eye, EyeOff, AlertTriangle, Images, Search, BarChart3, Calendar, X, Copy, RotateCcw, Wrench, Link, Power, Users, Globe, Smartphone, Monitor, Tablet, TrendingUp, Download } from "lucide-react";
+import { Camera, LogOut, CheckCircle, XCircle, Trash2, Upload, Clock, Image as ImageIcon, Activity, Shield, ChevronLeft, CheckCheck, Key, Eye, EyeOff, AlertTriangle, Images, Search, BarChart3, Calendar, X, Copy, RotateCcw, Wrench, Link, Power, Users, Globe, Smartphone, Monitor, Tablet, TrendingUp, Download, Ban, Unlock, Sun, Moon } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
+import { useTheme } from "@/hooks/use-theme";
 
-type Tab = "pending" | "photos" | "upload" | "analytics" | "logs" | "settings";
+type Tab = "pending" | "photos" | "upload" | "analytics" | "visitors" | "logs" | "settings";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("pending");
   const navigate = useNavigate();
+  const { theme, toggle: toggleTheme } = useTheme();
   useEffect(() => { if (localStorage.getItem("family_admin") !== "true") navigate("/"); }, [navigate]);
 
   // Data
@@ -33,6 +35,8 @@ export default function Dashboard() {
   const mostViewedPhotos = useQuery(api.traffic.getMostViewedPhotos);
   const recentVisitors = useQuery(api.traffic.getRecentVisitors);
   const hourlyTraffic = useQuery(api.traffic.getHourlyTraffic);
+  const blocks = useQuery(api.traffic.getBlocks);
+  const blockedIps = useQuery(api.traffic.getBlockedIps) ?? [];
 
   // Mutations
   const approvePhoto = useMutation(api.photos.approvePhoto);
@@ -51,6 +55,8 @@ export default function Dashboard() {
   const clearPhotoViews = useMutation(api.traffic.clearPhotoViews);
   const changeUploadPassword = useMutation(api.admin.changeUploadPassword);
   const removeUploadPassword = useMutation(api.admin.removeUploadPassword);
+  const blockIp = useMutation(api.traffic.blockIp);
+  const unblockIp = useMutation(api.traffic.unblockIp);
 
   // UI State
   const [isUploading, setIsUploading] = useState(false);
@@ -110,6 +116,8 @@ export default function Dashboard() {
   const handleClearLogs = async () => { await clearLogs({}); setClearLogsConfirm(false); showToast("Logs cleared"); };
   const handleClearVisitors = async () => { await clearVisitors({}); showToast("Visitor data cleared"); };
   const handleClearPhotoViews = async () => { await clearPhotoViews({}); showToast("Photo view data cleared"); };
+  const handleBlockIp = async (ip: string, device?: string) => { await blockIp({ ip, reason: device ? `Blocked from a ${device} device` : "Blocked by admin" }); showToast(`Blocked ${ip}`); };
+  const handleUnblockIp = async (ip: string) => { await unblockIp({ ip }); showToast(`Unblocked ${ip}`); };
   const handleCopyLinks = async () => { if (!allPhotos) return; const links = allPhotos.filter((p) => p.status === "approved" && p.url).map((p) => p.url).join("\n"); await navigator.clipboard.writeText(links); showToast("Links copied"); };
 
   const filteredPhotos = useMemo(() => { if (!allPhotos) return []; return allPhotos.filter((p) => (photoFilter === "all" || p.status === photoFilter) && (photoSearch === "" || p.fileName.toLowerCase().includes(photoSearch.toLowerCase()))); }, [allPhotos, photoFilter, photoSearch]);
@@ -121,6 +129,7 @@ export default function Dashboard() {
     { id: "photos", label: "Photos", icon: <ImageIcon className="h-4 w-4" />, count: allPhotos?.length },
     { id: "upload", label: "Upload", icon: <Upload className="h-4 w-4" /> },
     { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
+    { id: "visitors", label: "Visitors", icon: <Users className="h-4 w-4" /> },
     { id: "logs", label: "Logs", icon: <Activity className="h-4 w-4" /> },
     { id: "settings", label: "Settings", icon: <Key className="h-4 w-4" /> },
   ];
@@ -137,10 +146,11 @@ export default function Dashboard() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5 sm:px-6 sm:py-3">
           <div className="flex items-center gap-2 sm:gap-3">
             <button onClick={() => navigate("/")} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground sm:rounded-xl sm:p-2"><ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" /></button>
-            <Logo size={32} variant="dark" />
+            <Logo size={32} />
             <div className="hidden sm:block"><h1 className="text-base font-bold text-foreground sm:text-lg" style={{ fontFamily: "var(--font-serif)" }}>Admin Dashboard</h1><p className="text-[10px] text-muted-foreground sm:text-xs">Manage the family vault</p></div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:bg-muted sm:h-9 sm:w-9" aria-label="Toggle theme">{theme === "dark" ? <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}</button>
             <button onClick={() => navigate("/")} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted sm:px-4 sm:py-2 sm:text-sm"><Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">View Site</span></button>
             <button onClick={handleLogout} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"><LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Sign Out</span></button>
           </div>
@@ -284,6 +294,69 @@ export default function Dashboard() {
                 <div className="space-y-1.5">{recentVisitors.slice(0, 15).map((v) => (<div key={v._id} className="flex items-center gap-3 rounded-lg bg-muted/30 px-3 py-2"><div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary"><Users className="h-3 w-3" /></div><div className="flex-1 min-w-0"><p className="text-[10px] text-foreground truncate sm:text-xs">{v.ip}</p><p className="text-[9px] text-muted-foreground">{v.device} • {v.page}</p></div><span className="text-[8px] text-muted-foreground/60 sm:text-[9px]">{new Date(v.timestamp).toLocaleString()}</span></div>))}</div>
               </div>
             )}
+          </div>
+        </motion.div>}
+
+        {/* Visitors — device details + block by IP */}
+        {activeTab === "visitors" && <motion.div key="visitors" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="space-y-4">
+            {/* Blocked list */}
+            <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground"><Ban className="h-4 w-4 text-red-500" /> Blocked Devices ({blocks?.length ?? 0})</h3>
+                <button onClick={handleClearVisitors} className="text-[10px] text-muted-foreground hover:text-destructive sm:text-xs">Clear visitors</button>
+              </div>
+              {blocks && blocks.length > 0 ? (
+                <div className="space-y-2">
+                  {blocks.map((b) => (
+                    <div key={b._id} className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50/60 px-3 py-2.5 dark:border-red-500/30 dark:bg-red-500/10">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-500/15 text-red-500"><Ban className="h-4 w-4" /></div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-mono text-xs font-semibold text-red-600 dark:text-red-400">{b.ip}</p>
+                        <p className="truncate text-[10px] text-muted-foreground">{b.reason || "Blocked by admin"} • {new Date(b.timestamp).toLocaleString()}</p>
+                      </div>
+                      <button onClick={() => handleUnblockIp(b.ip)} className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-card px-2.5 py-1.5 text-[10px] font-semibold text-foreground shadow-sm hover:bg-muted sm:text-xs"><Unlock className="h-3 w-3 text-green-600 dark:text-green-400" /> Unblock</button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">No devices blocked yet. Block a visitor below to stop them from viewing photos.</p>
+              )}
+            </div>
+
+            {/* Device details — recent visitors */}
+            <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6">
+              <h3 className="mb-4 text-sm font-semibold text-foreground">Device Details — Recent Visitors ({recentVisitors?.length ?? 0})</h3>
+              {recentVisitors && recentVisitors.length > 0 ? (
+                <div className="space-y-2">
+                  {recentVisitors.map((v) => {
+                    const blocked = blockedIps.includes(v.ip);
+                    return (
+                      <div key={v._id} className={cn("flex items-center gap-2.5 rounded-xl border px-3 py-2.5", blocked ? "border-red-300 bg-red-50/40 dark:border-red-500/30 dark:bg-red-500/5" : "border-border/40 bg-muted/30")}>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          {v.device === "mobile" ? <Smartphone className="h-4 w-4" /> : v.device === "tablet" ? <Tablet className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <p className="truncate font-mono text-[11px] font-semibold text-foreground">{v.ip}</p>
+                            {blocked && <span className="rounded-full bg-red-500 px-1.5 py-px text-[8px] font-bold uppercase text-white">Blocked</span>}
+                          </div>
+                          <p className="truncate text-[10px] text-muted-foreground">{[v.browser, v.os, v.screen].filter(Boolean).join(" • ") || v.device || "Unknown device"}{v.city ? ` • ${v.city}${v.country ? ", " + v.country : ""}` : ""}</p>
+                          <p className="truncate text-[9px] text-muted-foreground/60">{v.page} • {new Date(v.timestamp).toLocaleString()}</p>
+                        </div>
+                        {blocked ? (
+                          <button onClick={() => handleUnblockIp(v.ip)} className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-card px-2.5 py-1.5 text-[10px] font-semibold text-foreground shadow-sm hover:bg-muted"><Unlock className="h-3 w-3 text-green-600 dark:text-green-400" /> Unblock</button>
+                        ) : (
+                          <button onClick={() => handleBlockIp(v.ip, v.device)} className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-red-500 px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-sm hover:bg-red-600"><Ban className="h-3 w-3" /> Block</button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState icon={<Users className="h-10 w-10" />} title="No visitors yet" description="Visitor device details appear here once family members open the site." />
+              )}
+            </div>
           </div>
         </motion.div>}
 

@@ -1,3 +1,5 @@
+import { useTheme } from "@/hooks/use-theme";
+
 interface LogoProps {
   size?: number;
   variant?: "light" | "dark";
@@ -5,11 +7,14 @@ interface LogoProps {
   className?: string;
 }
 
-export default function Logo({ size = 32, variant = "light", showText = false, className = "" }: LogoProps) {
-  const iconColor = variant === "light" ? "#FFFFFF" : "#1D1D1F";
-  const bgColor = variant === "light" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
-  const textColor = variant === "light" ? "rgba(255,255,255,0.9)" : "#1D1D1F";
-  const subColor = variant === "light" ? "rgba(255,255,255,0.4)" : "#86868B";
+export default function Logo({ size = 32, variant, showText = false, className = "" }: LogoProps) {
+  const { theme } = useTheme();
+  // Auto: dark theme → light icon, light theme → dark icon. Explicit variant wins.
+  const v = variant ?? (theme === "dark" ? "light" : "dark");
+  const iconColor = v === "light" ? "#FFFFFF" : "#1D1D1F";
+  const bgColor = v === "light" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)";
+  const textColor = v === "light" ? "rgba(255,255,255,0.92)" : "#1D1D1F";
+  const subColor = v === "light" ? "rgba(255,255,255,0.45)" : "#86868B";
 
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>

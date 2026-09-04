@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { Camera, Upload, Check, Shield, Search, Heart, ArrowUp, Download, Loader2, X } from "lucide-react";
+import { Camera, Upload, Check, Shield, Search, Heart, ArrowUp, Download, Loader2, X, Lock, Sun, Moon, Ban } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import SplashScreen from "@/components/SplashScreen";
@@ -8,11 +8,65 @@ import AdminLoginModal from "@/components/AdminLoginModal";
 import UploadModal from "@/components/UploadModal";
 import PhotoLightbox from "@/components/PhotoLightbox";
 import Logo from "@/components/Logo";
+import { useTheme } from "@/hooks/use-theme";
 
 function getVisitorId(): string {
   let id = localStorage.getItem("vault_visitor_id");
   if (!id) { id = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("vault_visitor_id", id); }
   return id;
+}
+
+/* ── Device fingerprint helpers ── */
+function detectDevice(ua: string): string {
+  if (/Tablet|iPad/i.test(ua)) return "tablet";
+  if (/Mobi|Android/i.test(ua)) return "mobile";
+  return "desktop";
+}
+function detectBrowser(ua: string): string {
+  if (ua.includes("Edg/")) return "Edge";
+  if (ua.includes("OPR/") || ua.includes("Opera")) return "Opera";
+  if (ua.includes("Firefox/")) return "Firefox";
+  if (ua.includes("SamsungBrowser/")) return "Samsung Internet";
+  if (ua.includes("CriOS/")) return "Chrome (iOS)";
+  if (ua.includes("Chrome/")) return "Chrome";
+  if (ua.includes("Safari/")) return "Safari";
+  return "Unknown";
+}
+function detectOS(ua: string): string {
+  if (ua.includes("Windows NT 10")) return "Windows 10/11";
+  if (ua.includes("Windows NT 6.1")) return "Windows 7";
+  if (ua.includes("Android")) return "Android";
+  if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS";
+  if (ua.includes("Mac OS X")) return "macOS";
+  if (ua.includes("Linux")) return "Linux";
+  return "Unknown";
+}
+
+/** Fetch the real client IP via the Convex HTTP action, cached in localStorage. */
+async function fetchRealIp(): Promise<string | null> {
+  const cached = localStorage.getItem("vault_real_ip");
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${import.meta.env.VITE_CONVEX_URL}/client-info`);
+    const data = (await res.json()) as { ip?: string };
+    if (data.ip && data.ip !== "unknown") {
+      localStorage.setItem("vault_real_ip", data.ip);
+      return data.ip;
+    }
+  } catch {}
+  return cached;
+}
+
+/** Speak a short phrase (best effort — wrapped so it can never break the app). */
+function speak(text: string) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    u.pitch = 1.05;
+    window.speechSynthesis.speak(u);
+  } catch {}
 }
 
 async function directDownload(url: string, fileName: string, onLoading?: () => void, onDone?: () => void) {
@@ -46,6 +100,37 @@ function useFavorites() {
     setFavorites((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); localStorage.setItem("vault_favorites", JSON.stringify([...n])); return n; });
   }, []);
   return { favorites, toggle };
+}
+
+/* ── Blocked screen (admin blocked this device) ── */
+function BlockedScreen() {
+  return (
+    <div className="vault-blocked">
+      <div className="vault-blocked-card">
+        <div className="vault-blocked-icon"><Ban className="h-8 w-8" /></div>
+        <h1>Access Restricted</h1>
+        <p>This device has been blocked by the family admin. If you think this is a mistake, please contact Rajnish.</p>
+        <span className="vault-blocked-brand">बड़ोलिया परिवार</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Camera flash entry animation ── */
+function CameraFlash() {
+  return (
+    <motion.div className="vault-camera-flash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, ease: "easeOut" }} className="vault-camera-ring">
+        <Camera className="h-10 w-10" />
+      </motion.div>
+      <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.4 }} className="vault-camera-label">
+        Sweet Family memories
+      </motion.span>
+      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }} className="vault-camera-sub">
+        📷 opening your photo vault
+      </motion.span>
+    </motion.div>
+  );
 }
 
 /* ── Overlay Download Button ── */
@@ -116,11 +201,13 @@ function PhotoCard({ photo, index, onClick, visitorId, isFav, onToggleFav }: {
 export default function Landing() {
   const visitorId = useMemo(() => getVisitorId(), []);
   const recordVisitor = useMutation(api.traffic.recordVisitor);
+  const { theme, toggle: toggleTheme } = useTheme();
 
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem("vault_splash_seen"));
   const [galleryReady, setGalleryReady] = useState(!showSplash);
   const [heroVisible, setHeroVisible] = useState(!showSplash);
   const [dividerExpanded, setDividerExpanded] = useState(!showSplash);
+  const [cameraFlash, setCameraFlash] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -129,10 +216,20 @@ export default function Landing() {
   const [dlAllState, setDlAllState] = useState<"idle" | "loading" | "done">("idle");
   const [dlAllProgress, setDlAllProgress] = useState({ current: 0, total: 0 });
   const [titleRevealed, setTitleRevealed] = useState(false);
+  const [realIp, setRealIp] = useState<string | null>(() => localStorage.getItem("vault_real_ip"));
 
   const approvedPhotos = useQuery(api.photos.listApproved);
   const photos = approvedPhotos ?? [];
+  const blockedIps = useQuery(api.traffic.getBlockedIps);
   const { favorites, toggle: toggleFav } = useFavorites();
+
+  const effectiveIp = realIp ?? visitorId;
+  const isBlocked = !!blockedIps && blockedIps.includes(effectiveIp);
+
+  // Fetch the real IP once.
+  useEffect(() => {
+    fetchRealIp().then((ip) => { if (ip) setRealIp(ip); }).catch(() => {});
+  }, []);
 
   useEffect(() => { if (galleryReady) { const t = setTimeout(() => setTitleRevealed(true), 300); return () => clearTimeout(t); } }, [galleryReady]);
 
@@ -142,12 +239,24 @@ export default function Landing() {
     return photos.filter((p) => p.fileName.toLowerCase().includes(q));
   }, [photos, searchQuery]);
 
+  // Record exactly once — wait briefly for the real IP, then fall back to the visitor id.
+  const visitorRecorded = useRef(false);
   useEffect(() => {
+    if (visitorRecorded.current) return;
     const timer = setTimeout(() => {
-      recordVisitor({ ip: visitorId, userAgent: navigator.userAgent, page: window.location.pathname, device: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : /Tablet|iPad/i.test(navigator.userAgent) ? "tablet" : "desktop" }).catch(() => {});
-    }, 1000);
+      visitorRecorded.current = true;
+      recordVisitor({
+        ip: effectiveIp,
+        userAgent: navigator.userAgent,
+        page: window.location.pathname,
+        device: detectDevice(navigator.userAgent),
+        browser: detectBrowser(navigator.userAgent),
+        os: detectOS(navigator.userAgent),
+        screen: `${window.innerWidth}x${window.innerHeight}`,
+      }).catch(() => {});
+    }, realIp ? 600 : 1800);
     return () => clearTimeout(timer);
-  }, [visitorId, recordVisitor]);
+  }, [effectiveIp, realIp, recordVisitor]);
 
   useEffect(() => {
     const h = () => setShowScrollTop(window.scrollY > 400);
@@ -155,10 +264,20 @@ export default function Landing() {
     return () => window.removeEventListener("scroll", h);
   }, []);
 
-  const handleSplashComplete = useCallback(() => {
+  const handleSplashComplete = useCallback((fromAdmin = false) => {
     sessionStorage.setItem("vault_splash_seen", "1");
     setShowSplash(false); setGalleryReady(true); setHeroVisible(true);
     setTimeout(() => setDividerExpanded(true), 400);
+    if (fromAdmin) return;
+    // Entry journey: camera flash + voice + auto-scroll to the photos.
+    setTimeout(() => {
+      setCameraFlash(true);
+      speak("Sweet Family memories");
+      setTimeout(() => {
+        setCameraFlash(false);
+        document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 1800);
+    }, 800);
   }, []);
 
   const handleDownloadAll = async () => {
@@ -169,23 +288,29 @@ export default function Landing() {
       () => { setDlAllState("done"); setTimeout(() => setDlAllState("idle"), 3000); });
   };
 
+  if (isBlocked) return <BlockedScreen />;
+
   return (
     <div className="min-h-screen bg-background">
-      {showSplash && <SplashScreen onComplete={handleSplashComplete} onAdminClick={() => { handleSplashComplete(); setShowAdminLogin(true); }} />}
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} onAdminClick={() => { handleSplashComplete(true); setShowAdminLogin(true); }} />}
+      {cameraFlash && <CameraFlash />}
 
       {/* ── Floating Pill Nav ── */}
       <div className={`vault-nav ${heroVisible ? "" : "is-hidden"}`}>
         <div className="vault-nav-brand">
-          <Logo size={32} variant="light" />
+          <Logo size={32} />
         </div>
         <div className="vault-nav-actions">
+          <button onClick={toggleTheme} className="vault-nav-theme" aria-label="Toggle theme">
+            {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          </button>
           <button onClick={() => setShowUpload(true)} className="vault-nav-btn">
             <Upload className="h-3.5 w-3.5" />
             <span className="label">Upload</span>
           </button>
           <button onClick={() => setShowAdminLogin(true)} className="vault-nav-admin">
-            <Shield className="h-3 w-3" />
-            <span className="label">Admin</span>
+            <Lock className="h-3 w-3" />
+            <span className="label">admin</span>
           </button>
         </div>
       </div>
@@ -214,7 +339,7 @@ export default function Landing() {
       {/* ── Gallery Section ── */}
       <section id="gallery" className="vault-gallery-section">
         <div className="vault-gallery-header">
-          <Logo size={28} variant="light" showText className="justify-center" />
+          <Logo size={28} showText className="justify-center" />
           <h2 className="vault-gallery-title" style={{ fontFamily: "var(--font-serif)", marginTop: 12 }}>
             {titleRevealed ? (
               <span className="brush-write"><span className="brush-text">Family Memories</span><span className="brush-underline" /></span>
@@ -283,7 +408,7 @@ export default function Landing() {
 
       {/* ── Footer ── */}
       <footer className="vault-footer">
-        <Logo size={24} variant="light" showText className="justify-center" />
+        <Logo size={24} showText className="justify-center" />
         <p className="vault-footer-slogan">A private space for our timeless memories</p>
         <div className="vault-footer-credit">
           <Shield className="h-3 w-3" />
