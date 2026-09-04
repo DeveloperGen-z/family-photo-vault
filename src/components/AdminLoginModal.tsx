@@ -4,6 +4,7 @@ import { X, Shield, Lock, Loader2 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
+import Logo from "@/components/Logo";
 
 interface AdminLoginModalProps { onClose: () => void; }
 
@@ -32,11 +33,11 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
 
         <div className="modal-head">
           <div className="modal-head-left">
-            <div className="modal-head-icon" style={{ background: "rgba(0,113,227,0.08)" }}><Shield className="h-4 w-4" style={{ color: "#0071E3" }} /></div>
+            <div className="modal-head-icon" style={{ background: "rgba(0,113,227,0.12)" }}><Shield className="h-4 w-4" style={{ color: "#0071E3" }} /></div>
             <div>
               <div className="modal-head-title">Admin Access</div>
               <div className="modal-head-sub">Enter password to continue</div>
-              <div style={{ fontSize: "0.6rem", color: "var(--muted-foreground)", opacity: 0.5, marginTop: 2 }}>For password, contact developer Rajnish</div>
+              <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.2)", marginTop: 2 }}>For password, contact developer Rajnish</div>
             </div>
           </div>
           <button onClick={onClose} className="modal-close"><X className="h-4 w-4" /></button>
@@ -44,10 +45,11 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
 
         <form onSubmit={handleSubmit} className="modal-body">
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <Logo size={40} variant="light" showText className="justify-center" />
             <div>
-              <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>Password</label>
+              <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>Password</label>
               <div style={{ position: "relative" }}>
-                <Lock className="h-4 w-4" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted-foreground)", opacity: 0.35 }} />
+                <Lock className="h-4 w-4" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.2)" }} />
                 <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }}
                   placeholder="Enter admin password" autoFocus className="admin-input" />
               </div>

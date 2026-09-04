@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Upload, Image, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import Logo from "@/components/Logo";
 
 interface UploadModalProps { onClose: () => void; }
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -53,7 +54,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
 
         <div className="modal-head">
           <div className="modal-head-left">
-            <div className="modal-head-icon" style={{ background: "rgba(0,113,227,0.08)" }}><Upload className="h-4 w-4" style={{ color: "#0071E3" }} /></div>
+            <div className="modal-head-icon" style={{ background: "rgba(0,113,227,0.12)" }}><Upload className="h-4 w-4" style={{ color: "#0071E3" }} /></div>
             <div>
               <div className="modal-head-title">Upload Photos</div>
               <div className="modal-head-sub">Photos appear after admin approval</div>
@@ -67,7 +68,7 @@ export default function UploadModal({ onClose }: UploadModalProps) {
             onDrop={(e) => { e.preventDefault(); setIsDragging(false); addFiles(e.dataTransfer.files); }}
             onClick={() => fileInputRef.current?.click()}
             className={`upload-dropzone ${isDragging ? "dragging" : ""}`}>
-            <Image className="h-8 w-8" style={{ margin: "0 auto", color: "var(--muted-foreground)", opacity: 0.3 }} />
+            <Image className="h-8 w-8" style={{ margin: "0 auto", color: "rgba(255,255,255,0.15)" }} />
             <p>Drag & drop photos</p>
             <small>or click to browse — JPG, PNG, WebP</small>
             <input ref={fileInputRef} type="file" multiple accept="image/*" style={{ display: "none" }} onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />
@@ -88,13 +89,13 @@ export default function UploadModal({ onClose }: UploadModalProps) {
                   <div key={i} className="upload-file-item">
                     <img src={f.preview} alt="" />
                     {f.status === "idle" && (
-                      <div className="upload-file-status" style={{ opacity: 0, background: "rgba(0,0,0,0.3)" }}>
+                      <div className="upload-file-status" style={{ opacity: 0 }}>
                         <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} className="upload-file-remove"><X className="h-3 w-3" /></button>
                       </div>
                     )}
-                    {f.status === "uploading" && <div className="upload-file-status" style={{ background: "rgba(0,0,0,0.4)" }}><Loader2 className="h-5 w-5 animate-spin" style={{ color: "#fff" }} /></div>}
-                    {f.status === "success" && <div className="upload-file-status" style={{ background: "rgba(52,199,89,0.3)" }}><CheckCircle className="h-5 w-5" style={{ color: "#34C759" }} /></div>}
-                    {f.status === "error" && <div className="upload-file-status" style={{ background: "rgba(255,59,48,0.3)" }}><AlertCircle className="h-5 w-5" style={{ color: "#FF3B30" }} /></div>}
+                    {f.status === "uploading" && <div className="upload-file-status" style={{ background: "rgba(0,0,0,0.5)" }}><Loader2 className="h-5 w-5 animate-spin" style={{ color: "#fff" }} /></div>}
+                    {f.status === "success" && <div className="upload-file-status" style={{ background: "rgba(52,199,89,0.2)" }}><CheckCircle className="h-5 w-5" style={{ color: "#34C759" }} /></div>}
+                    {f.status === "error" && <div className="upload-file-status" style={{ background: "rgba(255,59,48,0.2)" }}><AlertCircle className="h-5 w-5" style={{ color: "#FF6B6B" }} /></div>}
                   </div>
                 ))}
               </div>

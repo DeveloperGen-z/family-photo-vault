@@ -7,6 +7,7 @@ import SplashScreen from "@/components/SplashScreen";
 import AdminLoginModal from "@/components/AdminLoginModal";
 import UploadModal from "@/components/UploadModal";
 import PhotoLightbox from "@/components/PhotoLightbox";
+import Logo from "@/components/Logo";
 
 function getVisitorId(): string {
   let id = localStorage.getItem("vault_visitor_id");
@@ -175,18 +176,17 @@ export default function Landing() {
       {/* ── Floating Pill Nav ── */}
       <div className={`vault-nav ${heroVisible ? "" : "is-hidden"}`}>
         <div className="vault-nav-brand">
-          <div className="vault-nav-logo"><Camera className="h-4 w-4" /></div>
-          <div className="vault-nav-hindi">
-            <span>बड़ोलिया</span>
-            <span>परिवार</span>
-          </div>
+          <Logo size={32} variant="light" />
         </div>
         <div className="vault-nav-actions">
           <button onClick={() => setShowUpload(true)} className="vault-nav-btn">
             <Upload className="h-3.5 w-3.5" />
             <span className="label">Upload</span>
           </button>
-          <button onClick={() => setShowAdminLogin(true)} className="vault-nav-admin">Admin</button>
+          <button onClick={() => setShowAdminLogin(true)} className="vault-nav-admin">
+            <Shield className="h-3 w-3" />
+            <span className="label">Admin</span>
+          </button>
         </div>
       </div>
 
@@ -214,7 +214,8 @@ export default function Landing() {
       {/* ── Gallery Section ── */}
       <section id="gallery" className="vault-gallery-section">
         <div className="vault-gallery-header">
-          <h2 className="vault-gallery-title" style={{ fontFamily: "var(--font-serif)" }}>
+          <Logo size={28} variant="light" showText className="justify-center" />
+          <h2 className="vault-gallery-title" style={{ fontFamily: "var(--font-serif)", marginTop: 12 }}>
             {titleRevealed ? (
               <span className="brush-write"><span className="brush-text">Family Memories</span><span className="brush-underline" /></span>
             ) : <span style={{ opacity: 0 }}>Family Memories</span>}
@@ -282,6 +283,7 @@ export default function Landing() {
 
       {/* ── Footer ── */}
       <footer className="vault-footer">
+        <Logo size={24} variant="light" showText className="justify-center" />
         <p className="vault-footer-slogan">A private space for our timeless memories</p>
         <div className="vault-footer-credit">
           <Shield className="h-3 w-3" />

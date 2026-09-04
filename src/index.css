@@ -283,23 +283,24 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
 .vault-nav-btn:active { transform: scale(0.96); }
 
 .vault-nav-admin {
-  display: inline-flex; align-items: center; justify-content: center;
+  display: inline-flex; align-items: center; gap: 5px;
   padding: 7px 12px; border-radius: 100px;
-  border: 1.5px dashed var(--muted-foreground);
-  background: transparent;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(0,0,0,0.03);
   font-size: 0.6rem; font-weight: 600;
   color: var(--muted-foreground);
-  letter-spacing: 1px; text-transform: uppercase;
+  letter-spacing: 0.5px; text-transform: uppercase;
   transition: all 0.2s ease;
 }
-.vault-nav-admin:hover { border-color: var(--foreground); color: var(--foreground); }
+.vault-nav-admin:hover { border-color: rgba(0,0,0,0.15); color: var(--foreground); background: rgba(0,0,0,0.06); }
+.vault-nav-admin .label { font-size: 0.6rem; }
 
 @media (max-width: 480px) {
   .vault-nav { top: 12px; width: calc(100% - 24px); padding: 6px 8px 6px 12px; }
   .vault-nav-btn span.label { display: none; }
   .vault-nav-btn { padding: 8px; }
-  .vault-nav-admin { padding: 8px 10px; font-size: 0; }
-  .vault-nav-admin::after { content: "A"; font-size: 0.6rem; }
+  .vault-nav-admin span.label { display: none; }
+  .vault-nav-admin { padding: 8px; }
 }
 
 /* =============================================
@@ -318,7 +319,7 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
 
 .vault-hero-glow {
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 50% 35%, rgba(0,113,227,0.08) 0%, transparent 55%);
+  background: radial-gradient(ellipse at 50% 35%, rgba(0,113,227,0.06) 0%, transparent 55%);
   pointer-events: none;
 }
 
@@ -422,8 +423,9 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
 
 .vault-hero-fade {
   position: absolute; bottom: 0; left: 0; right: 0;
-  height: 80px;
-  background: linear-gradient(to top, var(--background), transparent);
+  height: 120px;
+  background: linear-gradient(to top, #111113, transparent);
+  z-index: 2;
 }
 
 /* =============================================
@@ -433,7 +435,8 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
 .vault-gallery-section {
   position: relative; z-index: 1;
   padding: 0 16px 80px;
-  background: #111113;
+  background: linear-gradient(180deg, #111113 0%, #0D0D0F 100%);
+  min-height: 50vh;
 }
 @media (min-width: 640px) { .vault-gallery-section { padding: 0 24px 100px; } }
 
@@ -844,60 +847,61 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
 .lb-comments-input button:active { transform: scale(0.9); }
 
 /* =============================================
-   UPLOAD MODAL
+   UPLOAD MODAL — Dark Theme
    ============================================= */
 
 .modal-overlay {
   position: fixed; inset: 0; z-index: 50;
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
-  background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .modal-card {
   width: 100%; max-width: 480px; max-height: 85vh;
-  background: var(--card); border-radius: 20px;
-  border: 1px solid var(--border);
-  box-shadow: 0 24px 80px rgba(0,0,0,0.12);
+  background: #1A1A1E; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
   overflow: hidden; display: flex; flex-direction: column;
 }
 
 .modal-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .modal-head-left { display: flex; align-items: center; gap: 12px; }
 .modal-head-icon {
   width: 36px; height: 36px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
 }
-.modal-head-title { font-size: 0.85rem; font-weight: 700; color: var(--foreground); }
-.modal-head-sub { font-size: 0.65rem; color: var(--muted-foreground); }
+.modal-head-title { font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.9); }
+.modal-head-sub { font-size: 0.65rem; color: rgba(255,255,255,0.35); }
 .modal-close {
   width: 32px; height: 32px; border-radius: 8px; border: none;
   display: flex; align-items: center; justify-content: center;
-  background: transparent; color: var(--muted-foreground);
+  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.35);
   transition: all 0.2s ease;
 }
-.modal-close:hover { background: var(--muted); color: var(--foreground); }
+.modal-close:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
 
 .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
 
 .upload-dropzone {
-  border: 2px dashed var(--border); border-radius: 14px;
+  border: 2px dashed rgba(255,255,255,0.08); border-radius: 14px;
   padding: 32px 20px; text-align: center; cursor: pointer;
   transition: all 0.2s ease;
 }
 .upload-dropzone:hover, .upload-dropzone.dragging {
-  border-color: #0071E3; background: rgba(0,113,227,0.03);
+  border-color: rgba(0,113,227,0.4); background: rgba(0,113,227,0.04);
 }
-.upload-dropzone p { font-size: 0.8rem; font-weight: 500; color: var(--foreground); margin-top: 10px; }
-.upload-dropzone small { font-size: 0.65rem; color: var(--muted-foreground); opacity: 0.6; }
+.upload-dropzone p { font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.7); margin-top: 10px; }
+.upload-dropzone small { font-size: 0.65rem; color: rgba(255,255,255,0.25); }
 
 .upload-file-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
 .upload-file-item {
   position: relative; border-radius: 10px; overflow: hidden;
-  aspect-ratio: 1; background: var(--muted);
+  aspect-ratio: 1; background: rgba(255,255,255,0.04);
 }
 .upload-file-item img { width: 100%; height: 100%; object-fit: cover; }
 .upload-file-status {
@@ -908,59 +912,62 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
   position: absolute; top: 4px; right: 4px;
   width: 22px; height: 22px; border-radius: 6px; border: none;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,0.9); color: var(--foreground);
+  background: rgba(0,0,0,0.5); color: #fff;
 }
+.upload-file-remove:hover { background: rgba(255,59,48,0.7); }
+.upload-file-item:hover .upload-file-status { opacity: 1 !important; }
 
 .upload-actions {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 12px; margin-top: 16px;
 }
-.upload-actions p { font-size: 0.75rem; font-weight: 600; color: var(--foreground); }
+.upload-actions p { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); }
 .upload-btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 16px; border-radius: 100px; border: none;
-  background: var(--primary); color: var(--primary-foreground);
+  background: #0071E3; color: #FFF;
   font-size: 0.7rem; font-weight: 600;
   transition: all 0.2s ease;
 }
-.upload-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.upload-btn:hover { background: #0077ED; box-shadow: 0 4px 12px rgba(0,113,227,0.3); }
 .upload-btn:active { transform: scale(0.96); }
-.upload-btn:disabled { opacity: 0.5; }
+.upload-btn:disabled { opacity: 0.4; }
 
 .upload-success {
   margin-top: 12px; padding: 12px; border-radius: 12px;
-  background: rgba(0,113,227,0.05); border: 1px solid rgba(0,113,227,0.1);
+  background: rgba(52, 199, 89, 0.08); border: 1px solid rgba(52, 199, 89, 0.15);
   text-align: center;
 }
-.upload-success p { font-size: 0.7rem; font-weight: 500; color: #0071E3; }
+.upload-success p { font-size: 0.7rem; font-weight: 500; color: #34C759; }
 
 /* =============================================
-   ADMIN LOGIN
+   ADMIN LOGIN — Dark Theme
    ============================================= */
 
 .admin-input {
   width: 100%; padding: 10px 12px 10px 36px;
-  border-radius: 12px; border: 1px solid var(--border);
-  background: var(--background); font-size: 0.8rem;
-  color: var(--foreground); outline: none;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04); font-size: 0.8rem;
+  color: rgba(255,255,255,0.85); outline: none;
   transition: all 0.2s ease;
 }
-.admin-input:focus { border-color: rgba(0,113,227,0.3); box-shadow: 0 0 0 3px rgba(0,113,227,0.08); }
-.admin-input::placeholder { color: var(--muted-foreground); opacity: 0.4; }
+.admin-input:focus { border-color: rgba(0,113,227,0.4); box-shadow: 0 0 0 3px rgba(0,113,227,0.1); }
+.admin-input::placeholder { color: rgba(255,255,255,0.2); }
 
 .admin-submit {
   width: 100%; padding: 11px; border-radius: 12px; border: none;
-  background: var(--primary); color: var(--primary-foreground);
+  background: #0071E3; color: #FFF;
   font-size: 0.8rem; font-weight: 600;
   transition: all 0.2s ease;
 }
-.admin-submit:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.admin-submit:hover { background: #0077ED; box-shadow: 0 4px 16px rgba(0,113,227,0.3); }
 .admin-submit:active { transform: scale(0.98); }
 .admin-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .admin-error {
   padding: 10px 14px; border-radius: 10px;
-  background: rgba(255,59,48,0.06); font-size: 0.75rem; color: #FF3B30;
+  background: rgba(255,59,48,0.1); border: 1px solid rgba(255,59,48,0.15);
+  font-size: 0.75rem; color: #FF6B6B;
 }
 
 /* =============================================
@@ -971,3 +978,6 @@ input:focus { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12); }
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
