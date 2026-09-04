@@ -46,39 +46,21 @@ export default function SplashScreen({ onComplete }: Props) {
   return (
     <div className={`splash-screen ${fadeOut ? "fade-out" : ""}`}>
       <div className="splash-ambient-glow" />
-
-      {/* Hindi branding — top left */}
       <div className="splash-branding-top">
         <div className="splash-hindi-writing">
           <span>{hindiLine1}</span>
           <div className="splash-hindi-second-line"><span>{hindiLine2}</span></div>
         </div>
       </div>
-
-      {/* Center content */}
       <div className="splash-center-content">
-        {showTitle && (
-          <div className="splash-title" style={{ opacity: 1, animation: "none" }}>
-            Sweet Family Photos
-          </div>
-        )}
-
+        {showTitle && <div className="splash-title" style={{ opacity: 1, animation: "none" }}>Sweet Family Photos</div>}
         <div className="splash-divider" style={{ animationDelay: showTitle ? "0.1s" : "99s" }} />
-
-        {showCenter && (
-          <>
-            <div className="splash-subtitle" style={{ opacity: 1, transform: "translateY(0)" }}>
-              PRIVATE FAMILY GALLERY
-            </div>
-            <div className="splash-tagline" style={{ opacity: 1, transform: "translateY(0)" }}>
-              Preserving memories, together
-            </div>
-          </>
-        )}
+        {showCenter && (<>
+          <div className="splash-subtitle" style={{ opacity: 1, transform: "translateY(0)" }}>PRIVATE FAMILY GALLERY</div>
+          <div className="splash-tagline" style={{ opacity: 1, transform: "translateY(0)" }}>Preserving memories, together</div>
+        </>)}
       </div>
-
-      {/* Footer credit */}
-      <div className="splash-footer-credit" style={{ opacity: showCenter ? 0.6 : 0, transform: showCenter ? "translateY(0)" : "translateY(8px)", transition: "all 0.4s ease" }}>
+      <div className="splash-footer-credit" style={{ opacity: showCenter ? 0.5 : 0, transform: showCenter ? "translateY(0)" : "translateY(8px)", transition: "all 0.4s ease" }}>
         <Shield className="h-3 w-3" />
         <span>powered by Rajnish</span>
       </div>

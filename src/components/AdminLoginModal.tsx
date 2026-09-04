@@ -15,8 +15,7 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!password.trim()) return;
+    e.preventDefault(); if (!password.trim()) return;
     setIsLoading(true); setError("");
     try {
       const isValid = await verifyAdmin({ password });
@@ -27,44 +26,35 @@ export default function AdminLoginModal({ onClose }: AdminLoginModalProps) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 16 }}
-        transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-        className="w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="modal-overlay" onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 12 }}
+        transition={{ duration: 0.2 }} className="modal-card" style={{ maxWidth: "380px" }} onClick={(e) => e.stopPropagation()}>
 
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10"><Shield className="h-4 w-4 text-indigo-500" /></div>
+        <div className="modal-head">
+          <div className="modal-head-left">
+            <div className="modal-head-icon" style={{ background: "rgba(0,113,227,0.08)" }}><Shield className="h-4 w-4" style={{ color: "#0071E3" }} /></div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Admin Access</h2>
-              <p className="text-[11px] text-muted-foreground">Enter password to continue</p>
-              <p className="mt-0.5 text-[10px] text-muted-foreground/50">For password, contact developer Rajnish</p>
+              <div className="modal-head-title">Admin Access</div>
+              <div className="modal-head-sub">Enter password to continue</div>
+              <div style={{ fontSize: "0.6rem", color: "var(--muted-foreground)", opacity: 0.5, marginTop: 2 }}>For password, contact developer Rajnish</div>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-lg p-2 text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="modal-close"><X className="h-4 w-4" /></button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5">
-          <div className="space-y-3">
+        <form onSubmit={handleSubmit} className="modal-body">
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-foreground">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/35" />
+              <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "var(--foreground)", marginBottom: 6 }}>Password</label>
+              <div style={{ position: "relative" }}>
+                <Lock className="h-4 w-4" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted-foreground)", opacity: 0.35 }} />
                 <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                  placeholder="Enter admin password" autoFocus
-                  className="w-full rounded-xl border border-border bg-background py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground/30 focus:border-ring/30 focus:outline-none focus:ring-2 focus:ring-ring/10 transition-all duration-200" />
+                  placeholder="Enter admin password" autoFocus className="admin-input" />
               </div>
             </div>
-
-            {error && (
-              <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-600">{error}</motion.p>
-            )}
-
-            <button type="submit" disabled={isLoading || !password.trim()}
-              className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]">
-              {isLoading ? (<span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</span>) : "Sign In"}
+            {error && <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="admin-error">{error}</motion.div>}
+            <button type="submit" disabled={isLoading || !password.trim()} className="admin-submit">
+              {isLoading ? (<span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</span>) : "Sign In"}
             </button>
           </div>
         </form>
