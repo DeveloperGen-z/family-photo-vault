@@ -162,7 +162,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} onAdminClick={() => { handleSplashComplete(); setShowAdminLogin(true); }} />}
 
       {/* ── Floating Pill Nav ── */}
       <div className={`vault-nav ${heroVisible ? "" : "is-hidden"}`}>
