@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Shield } from "lucide-react";
 
-interface Props {
-  onComplete: () => void;
-}
+interface Props { onComplete: () => void; }
 
 export default function SplashScreen({ onComplete }: Props) {
   const [hindiLine1, setHindiLine1] = useState("");
@@ -16,7 +14,6 @@ export default function SplashScreen({ onComplete }: Props) {
   const hindi1 = "बड़ोलिया";
   const hindi2 = "परिवार";
 
-  // Write Hindi text fast
   useEffect(() => {
     let i = 0;
     const iv = setInterval(() => {
@@ -29,21 +26,20 @@ export default function SplashScreen({ onComplete }: Props) {
           else {
             clearInterval(iv2);
             setShowTitle(true);
-            setTimeout(() => setShowCenter(true), 250);
+            setTimeout(() => setShowCenter(true), 200);
             setTimeout(() => {
               setFadeOut(true);
               setTimeout(() => { if (!completedRef.current) { completedRef.current = true; onComplete(); } }, 500);
-            }, 1500);
+            }, 1200);
           }
-        }, 70);
+        }, 65);
       }
-    }, 90);
+    }, 85);
     return () => { clearInterval(iv); };
   }, [onComplete]);
 
-  // Safety net — force complete
   useEffect(() => {
-    const t = setTimeout(() => { if (!completedRef.current) { completedRef.current = true; onComplete(); } }, 3500);
+    const t = setTimeout(() => { if (!completedRef.current) { completedRef.current = true; onComplete(); } }, 3000);
     return () => clearTimeout(t);
   }, [onComplete]);
 
@@ -82,7 +78,7 @@ export default function SplashScreen({ onComplete }: Props) {
       </div>
 
       {/* Footer credit */}
-      <div className="splash-footer-credit" style={{ opacity: showCenter ? 0.7 : 0, transform: showCenter ? "translateY(0)" : "translateY(8px)", transition: "all 0.5s ease" }}>
+      <div className="splash-footer-credit" style={{ opacity: showCenter ? 0.6 : 0, transform: showCenter ? "translateY(0)" : "translateY(8px)", transition: "all 0.4s ease" }}>
         <Shield className="h-3 w-3" />
         <span>powered by Rajnish</span>
       </div>
