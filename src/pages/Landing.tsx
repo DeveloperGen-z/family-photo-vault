@@ -87,17 +87,25 @@ function PhotoCard({ photo, index, onClick, visitorId, isFav, onToggleFav }: {
   onClick: () => void; visitorId: string; isFav: boolean; onToggleFav: (id: string) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const prettyName = photo.fileName.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
+  const dateStr = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   return (
-    <div className="vault-card-frame" style={{ animationDelay: `${Math.min(index * 0.06, 0.35)}s` }} onClick={onClick}>
-      <img src={photo.url} alt={photo.fileName} className={loaded ? "loaded" : ""} loading="lazy" onLoad={() => setLoaded(true)} />
-      <button onClick={(e) => { e.stopPropagation(); onToggleFav(photo._id); }} className={`vault-card-fav ${isFav ? "active" : ""}`}>
-        <Heart className={`h-3 w-3 ${isFav ? "fill-current" : ""}`} />
-      </button>
-      <div className="vault-card-overlay">
-        <div className="vault-card-overlay-name">{photo.fileName}</div>
-        <div className="vault-card-overlay-actions">
+    <div className="vault-vcard" style={{ animationDelay: `${Math.min(index * 0.06, 0.35)}s` }}>
+      <div className="vault-vcard-img-wrap" onClick={onClick}>
+        <img src={photo.url} alt={photo.fileName} className={loaded ? "loaded" : ""} loading="lazy" onLoad={() => setLoaded(true)} />
+        {!loaded && <div className="vault-vcard-skeleton" />}
+      </div>
+      <div className="vault-vcard-info">
+        <div className="vault-vcard-meta">
+          <span className="vault-vcard-date">{dateStr}</span>
+          <button onClick={(e) => { e.stopPropagation(); onToggleFav(photo._id); }} className={`vault-vcard-fav ${isFav ? "active" : ""}`}>
+            <Heart className={`h-3 w-3 ${isFav ? "fill-current" : ""}`} />
+          </button>
+        </div>
+        <h3 className="vault-vcard-title">{prettyName}</h3>
+        <div className="vault-vcard-actions">
+          <button className="vault-vcard-view" onClick={onClick}>View</button>
           <OverlayDownloadBtn url={photo.url} fileName={photo.fileName} />
-          <OverlayHeartBtn photoId={photo._id} visitorId={visitorId} />
         </div>
       </div>
     </div>
